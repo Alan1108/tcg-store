@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ComingSoonCardRain } from "@/components/molecules/ComingSoonCardRain";
 
 export const metadata: Metadata = {
-  title: "Próximamente — Kago Gallery",
+  title: "Próximamente — Kādo Gallery",
   description: "Estamos preparando algo nuevo. Vuelve pronto.",
 };
 
@@ -16,7 +16,7 @@ export default function ComingSoonPage() {
         <div className="coming-soon-logo-shell mb-10 w-full max-w-md px-2">
           <Image
             src="/logo-principal-celeste.png"
-            alt="Kago Gallery"
+            alt="Kāgo Gallery"
             width={720}
             height={400}
             priority
