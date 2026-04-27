@@ -1,26 +1,285 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --accent-primary: #4B8DF5;
+  --accent-primary-hover: #6BA3FF;
+  --accent-secondary: #8F9FE8;
+  --bg-base: #E8E0EA;
+  --bg-elevated: #CCC6DE;
+  --bg-modal: #B0B6E2;
+  --bg-surface: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-accent: rgba(75, 141, 245, 0.25);
+  --condition-damaged: #991B1B;
+  --condition-hp: #EF4444;
+  --condition-lp: #F59E0B;
+  --condition-mp: #F97316;
+  --condition-nm: #22C55E;
+  --danger: #EF4444;
+  --game-lorcana: #2DD4BF;
+  --game-mtg: #C8A84E;
+  --game-onepiece: #E94560;
+  --game-pokemon: #F5D623;
+  --game-yugioh: #9B59B6;
+  --info: #3B82F6;
+  --inquiry-closed: #9494AC;
+  --inquiry-contacted: #3B82F6;
+  --inquiry-new: #4B8DF5;
+  --inquiry-sold: #22C55E;
+  --inquiry-unavailable: #9494AC;
+  --order-cancelled: #EF4444;
+  --order-delivered: #22C55E;
+  --order-pending: #F59E0B;
+  --order-processing: #3B82F6;
+  --order-shipped: #8B5CF6;
+  --rarity-common: #9494AC;
+  --rarity-holo: #A78BFA;
+  --rarity-rare: #F5A623;
+  --rarity-secret: #FBBF24;
+  --rarity-ultra: #F472B6;
+  --rarity-uncommon: #60A5FA;
+  --shadow-level1: rgba(75, 141, 245, 0.08);
+  --shadow-level2: rgba(75, 141, 245, 0.15);
+  --shadow-level3: rgba(75, 141, 245, 0.21);
+  --shadow-level4: rgba(75, 141, 245, 0.27);
+  --stock-in: #22C55E;
+  --stock-low: #F59E0B;
+  --stock-out: #9494AC;
+  --success: #22C55E;
+  --text-muted: #9494AC;
+  --text-primary: #1A1A30;
+  --text-secondary: #5A5A78;
+  --warning: #F59E0B;
+  --whatsapp: #25D366;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: 'DM Sans', sans-serif;
+  --font-heading: 'Rajdhani', sans-serif;
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-primary-hover: var(--accent-primary-hover);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-bg-base: var(--bg-base);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-modal: var(--bg-modal);
+  --color-bg-surface: var(--bg-surface);
+  --color-border: var(--border);
+  --color-border-accent: var(--border-accent);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-whatsapp: var(--whatsapp);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-game-pokemon: var(--game-pokemon);
+  --color-game-mtg: var(--game-mtg);
+  --color-game-yugioh: var(--game-yugioh);
+  --color-game-lorcana: var(--game-lorcana);
+  --color-game-onepiece: var(--game-onepiece);
+  --color-condition-nm: var(--condition-nm);
+  --color-condition-lp: var(--condition-lp);
+  --color-condition-mp: var(--condition-mp);
+  --color-condition-hp: var(--condition-hp);
+  --color-condition-damaged: var(--condition-damaged);
+  --color-rarity-common: var(--rarity-common);
+  --color-rarity-uncommon: var(--rarity-uncommon);
+  --color-rarity-rare: var(--rarity-rare);
+  --color-rarity-holo: var(--rarity-holo);
+  --color-rarity-ultra: var(--rarity-ultra);
+  --color-rarity-secret: var(--rarity-secret);
+  --color-stock-in: var(--stock-in);
+  --color-stock-low: var(--stock-low);
+  --color-stock-out: var(--stock-out);
+  --color-order-pending: var(--order-pending);
+  --color-order-processing: var(--order-processing);
+  --color-order-shipped: var(--order-shipped);
+  --color-order-delivered: var(--order-delivered);
+  --color-order-cancelled: var(--order-cancelled);
+  --color-inquiry-new: var(--inquiry-new);
+  --color-inquiry-contacted: var(--inquiry-contacted);
+  --color-inquiry-sold: var(--inquiry-sold);
+  --color-inquiry-closed: var(--inquiry-closed);
+  --color-inquiry-unavailable: var(--inquiry-unavailable);
+  --shadow-level1: 0 1px 3px var(--shadow-level1);
+  --shadow-level2: 0 4px 12px var(--shadow-level2);
+  --shadow-level3: 0 8px 24px var(--shadow-level3);
+  --shadow-level4: 0 16px 48px var(--shadow-level4);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Coming soon: brand gradient + logo motion (Kago Gallery) */
+@keyframes coming-soon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes coming-soon-glow {
+  0%,
+  100% {
+    opacity: 0.32;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.58;
+    transform: scale(1.06);
+  }
+}
+
+.coming-soon-page {
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: linear-gradient(
+    155deg,
+    #050a30 0%,
+    #12104a 32%,
+    #1a0b5e 68%,
+    #08051c 100%
+  );
+}
+
+.coming-soon-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 90% 50% at 50% -5%,
+    rgba(91, 185, 249, 0.2) 0%,
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+.coming-soon-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    circle at 85% 105%,
+    rgba(91, 185, 249, 0.12) 0%,
+    transparent 42%
+  );
+  pointer-events: none;
+}
+
+@keyframes coming-soon-card-rain {
+  0% {
+    transform: translate(calc(-50% + 0px), var(--card-y-0, -12vh))
+      rotate(var(--card-rot, 0deg));
+    opacity: var(--card-opacity-start, 0.48);
+  }
+  8% {
+    opacity: 0.52;
+  }
+  82% {
+    opacity: 0.38;
+  }
+  100% {
+    transform: translate(
+        calc(-50% + var(--card-drift, 0px)),
+        calc(var(--card-y-0, -12vh) + var(--card-fall, 125vh))
+      )
+      rotate(calc(var(--card-rot, 0deg) + 520deg));
+    opacity: 0;
+  }
+}
+
+.coming-soon-card-rain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.coming-soon-card-rain-item {
+  position: absolute;
+  top: 0;
+  display: block;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background-image:
+    repeating-linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      transparent 1px 6px
+    ),
+    linear-gradient(
+      168deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(26, 11, 94, 0.45) 100%
+    );
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  filter: blur(var(--card-blur, 0px));
+  animation-name: coming-soon-card-rain;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* Without this, positive animation-delay keeps cards at top:0 until delay ends */
+  animation-fill-mode: both;
+  will-change: transform;
+}
+
+.coming-soon-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.coming-soon-logo-shell {
+  position: relative;
+  display: block;
+  animation: coming-soon-float 4.8s ease-in-out infinite;
+}
+
+.coming-soon-logo-shell::before {
+  content: "";
+  position: absolute;
+  inset: -6% -10%;
+  z-index: 0;
+  border-radius: 1.25rem;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(91, 185, 249, 0.5) 0%,
+    rgba(26, 11, 94, 0) 72%
+  );
+  filter: blur(22px);
+  animation: coming-soon-glow 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.coming-soon-logo-img {
+  border-radius: 0.75rem;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coming-soon-logo-shell,
+  .coming-soon-logo-shell::before {
+    animation: none;
+  }
+
+  .coming-soon-card-rain {
+    display: none;
+  }
 }
