@@ -6,6 +6,10 @@ import { ComingSoonCardRain } from "@/components/molecules/ComingSoonCardRain";
 export const metadata: Metadata = {
   title: "Próximamente — Kādo Gallery",
   description: "Estamos preparando algo nuevo. Vuelve pronto.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function ComingSoonPage() {
@@ -16,7 +20,7 @@ export default function ComingSoonPage() {
         <div className="coming-soon-logo-shell mb-10 w-full max-w-md px-2">
           <Image
             src="/logo-principal-celeste.png"
-            alt="Kāgo Gallery"
+            alt="Kādo Gallery"
             width={720}
             height={400}
             priority
