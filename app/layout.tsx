@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { seoConfig } from "@/lib/seo";
+import { RegionProvider } from "@/providers/region";
+import { CartProvider } from "@/providers/cart";
 
 export const metadata: Metadata = {
   metadataBase: new URL(seoConfig.siteUrl),
@@ -63,8 +65,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="es" className="h-full antialiased" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <RegionProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </RegionProvider>
+      </body>
     </html>
   );
 }

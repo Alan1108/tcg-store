@@ -2,14 +2,17 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import type { SealedProduct } from '@/types';
+import type { HttpTypes } from '@medusajs/types';
 import { SealedProductCard } from './SealedProductCard';
+import { useCart } from '@/providers/cart';
 
 interface FeaturedCarouselProps {
-  products: SealedProduct[];
+  products: HttpTypes.StoreProduct[];
 }
 
 export function FeaturedCarousel({ products }: FeaturedCarouselProps) {
+  const { addToCart } = useCart();
+
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex items-center justify-between">
@@ -26,7 +29,14 @@ export function FeaturedCarousel({ products }: FeaturedCarouselProps) {
         </button>
         <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.slice(0, 4).map((product) => (
-            <SealedProductCard key={product.id} product={product} />
+            <Link key={product.id} href={`/sealed/${product.id}`}>
+              <SealedProductCard
+                product={product}
+                onAddToCart={(variantId) => {
+                  addToCart(variantId, 1);
+                }}
+              />
+            </Link>
           ))}
         </div>
         <button className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-modal)] transition-colors">

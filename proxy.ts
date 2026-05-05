@@ -11,7 +11,7 @@ function isComingSoonEnabled(): boolean {
   return v === "true" || v === "1" || v === "yes";
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (!isComingSoonEnabled()) {
     return NextResponse.next();
   }

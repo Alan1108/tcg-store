@@ -9,10 +9,16 @@ const steps = [
   { num: 4, icon: Phone, text: 'Realizas tu compra de forma segura' },
 ];
 
-export default function InquiryPage() {
+interface Props {
+  searchParams: Promise<{ productId?: string }>;
+}
+
+export default async function InquiryPage({ searchParams }: Props) {
+  const { productId } = await searchParams;
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6">
-      <SinglesInquiryForm />
+      <SinglesInquiryForm productId={productId} />
       <Divider />
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5 flex flex-col gap-4">
         <h3 className="text-base font-bold text-[var(--text-primary)]">¿Cómo funciona?</h3>

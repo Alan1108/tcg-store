@@ -1,21 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SealedProductCard } from '@/components/organisms';
-import { InputSearch, ChipFilter, ChipSelection, ButtonSecondary, InputDropdown, ButtonIconOnly } from '@/components/atoms';
-import type { SealedProduct } from '@/types';
-
-const products: SealedProduct[] = [
-  { id: '1', name: 'Booster Box Scarlet & Violet 151', setName: 'Scarlet & Violet', game: 'pokemon', price: 89990, imageUrl: '', stock: 'in_stock', category: 'booster_box' },
-  { id: '2', name: 'Elite Trainer Box Paldea Evolved', setName: 'Paldea Evolved', game: 'pokemon', price: 49990, imageUrl: '', stock: 'in_stock', category: 'etb' },
-  { id: '3', name: 'Draft Booster Box Murders at Karlov Manor', setName: 'Murders at Karlov Manor', game: 'mtg', price: 119990, imageUrl: '', stock: 'in_stock', category: 'booster_box' },
-  { id: '4', name: 'Booster Box Age of Overlord', setName: 'Age of Overlord', game: 'yugioh', price: 74990, imageUrl: '', stock: 'low_stock', category: 'booster_box' },
-  { id: '5', name: 'Booster Box Azurada', setName: 'Azurada', game: 'lorcana', price: 94990, imageUrl: '', stock: 'in_stock', category: 'booster_box' },
-  { id: '6', name: 'Booster Pack Temporal Forces', setName: 'Temporal Forces', game: 'pokemon', price: 5990, imageUrl: '', stock: 'in_stock', category: 'booster_pack' },
-  { id: '7', name: 'Bundle One Piece OP-08', setName: 'Two Legends', game: 'onepiece', price: 64990, imageUrl: '', stock: 'out_of_stock', category: 'bundle' },
-  { id: '8', name: 'ETB Obsidian Flames', setName: 'Obsidian Flames', game: 'pokemon', price: 54990, imageUrl: '', stock: 'in_stock', category: 'etb' },
-];
+import { InputSearch, ChipSelection, ButtonSecondary, InputDropdown, ButtonIconOnly } from '@/components/atoms';
+import type { HttpTypes } from '@medusajs/types';
+import { getSealedProducts } from '@/services/products.service';
+import { useCart } from '@/providers/cart';
 
 const categories = ['Booster Box', 'ETB', 'Booster Pack', 'Bundle', 'Collection'];
 const sortOptions = [
@@ -26,10 +17,20 @@ const sortOptions = [
 ];
 
 export default function SealedCatalogPage() {
+  const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([]);
+  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
   const [sortBy, setSortBy] = useState('newest');
-  const [gameFilters, setGameFilters] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    getSealedProducts({ search: search || undefined, page, limit: 20 }).then(({ data, total: t }) => {
+      setProducts(data);
+      setTotal(t);
+    });
+  }, [search, page]);
 
   return (
     <div className="flex flex-col">
@@ -44,20 +45,13 @@ export default function SealedCatalogPage() {
             Sobres y Cajas
           </h1>
           <InputSearch placeholder="Buscar productos..." value={search} onChange={setSearch} />
-          {gameFilters.length > 0 && (
-            <div className="flex gap-2 flex-wrap">
-              {gameFilters.map((g) => (
-                <ChipFilter key={g} label={g} color="#4B8DF5" onRemove={() => setGameFilters((f) => f.filter((x) => x !== g))} />
-              ))}
-            </div>
-          )}
           <div className="flex gap-2 flex-wrap">
             {categories.map((cat) => (
               <ChipSelection key={cat} label={cat} active={activeCategory === cat} onClick={() => setActiveCategory(activeCategory === cat ? '' : cat)} />
             ))}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[var(--text-secondary)]">{products.length} productos</span>
+            <span className="text-sm text-[var(--text-secondary)]">{total} productos</span>
             <div className="flex items-center gap-2">
               <InputDropdown options={sortOptions} value={sortBy} onChange={setSortBy} className="w-40" />
               <ButtonSecondary label="Filtrar" />
@@ -69,18 +63,19 @@ export default function SealedCatalogPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.map((p) => (
             <Link key={p.id} href={`/sealed/${p.id}`}>
-              <SealedProductCard product={p} />
+              <SealedProductCard
+                product={p}
+                onAddToCart={(variantId) => addToCart(variantId, 1)}
+              />
             </Link>
           ))}
         </div>
         <div className="flex items-center justify-center gap-1 mt-8">
-          <ButtonIconOnly icon="ChevronLeft" />
-          {[1, 2, 3].map((n) => (
-            <button key={n} className={`w-10 h-10 rounded-lg text-sm font-medium ${n === 1 ? 'bg-[var(--accent-primary)] text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'}`}>
-              {n}
-            </button>
-          ))}
-          <ButtonIconOnly icon="ChevronRight" />
+          <ButtonIconOnly icon="ChevronLeft" onClick={() => setPage((p) => Math.max(1, p - 1))} />
+          <span className="w-10 h-10 rounded-lg text-sm font-medium bg-[var(--accent-primary)] text-white flex items-center justify-center">
+            {page}
+          </span>
+          <ButtonIconOnly icon="ChevronRight" onClick={() => setPage((p) => p + 1)} />
         </div>
       </div>
     </div>

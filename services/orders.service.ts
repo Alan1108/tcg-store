@@ -1,41 +1,27 @@
-import type { Order, OrderStatus } from '@/types';
-import type { PaginatedResponse, ProductFilters } from './products.service';
+import type { Order } from "@/types"
+import type { HttpTypes } from "@medusajs/types"
+import { sdk } from "@/lib/sdk"
 
-export interface OrderFilters {
-  status?: OrderStatus;
-  search?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  page?: number;
-  limit?: number;
+export interface PaginatedOrdersResponse {
+  data: Order[]
+  count: number
 }
 
-export async function createOrder(_data: {
-  customerName: string;
-  customerEmail: string;
-  shippingAddress: string;
-  paymentMethod: string;
-}): Promise<Order | null> {
-  // TODO: Connect to backend API
-  return null;
+export async function getCustomerOrders(
+  page = 1,
+  limit = 20
+): Promise<PaginatedOrdersResponse> {
+  const offset = (page - 1) * limit
+  const { orders, count } = await sdk.store.order.list({ limit, offset })
+  return { data: orders as Order[], count: count ?? orders.length }
 }
 
-export async function getOrderById(_id: string): Promise<Order | null> {
-  // TODO: Connect to backend API
-  return null;
+export async function getOrderById(id: string): Promise<Order | null> {
+  const { order } = await sdk.store.order.retrieve(id)
+  return (order as Order) ?? null
 }
 
-export async function getCustomerOrders(_filters?: ProductFilters): Promise<PaginatedResponse<Order>> {
-  // TODO: Connect to backend API
-  return { data: [], total: 0, page: 1, totalPages: 0 };
-}
-
-export async function getAllOrders(_filters?: OrderFilters): Promise<PaginatedResponse<Order>> {
-  // TODO: Connect to backend API
-  return { data: [], total: 0, page: 1, totalPages: 0 };
-}
-
-export async function updateOrderStatus(_orderId: string, _status: OrderStatus): Promise<Order | null> {
-  // TODO: Connect to backend API
-  return null;
+export async function completeCart(cartId: string): Promise<HttpTypes.StoreOrder | null> {
+  const result = await sdk.store.cart.complete(cartId)
+  return (result as { order?: HttpTypes.StoreOrder }).order ?? null
 }

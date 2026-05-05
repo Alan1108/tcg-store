@@ -1,0 +1,102 @@
+"use client"
+
+import { createContext, useContext, useEffect, useState } from "react"
+import type { Cart } from "@/types"
+import { sdk } from "@/lib/sdk"
+import { useRegion } from "./region"
+
+type CartContextType = {
+  cart: Cart | undefined
+  addToCart: (variantId: string, quantity?: number) => Promise<Cart>
+  updateItemQuantity: (lineItemId: string, quantity: number) => Promise<Cart>
+  removeItem: (lineItemId: string) => Promise<Cart>
+  refreshCart: () => Promise<Cart | undefined>
+  unsetCart: () => void
+}
+
+const CartContext = createContext<CartContextType | null>(null)
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [cart, setCart] = useState<Cart | undefined>()
+  const { region } = useRegion()
+
+  useEffect(() => {
+    if (!region) return
+    if (cart) {
+      localStorage.setItem("cart_id", cart.id)
+      return
+    }
+    const cartId = localStorage.getItem("cart_id")
+    if (!cartId) return
+    sdk.store.cart
+      .retrieve(cartId, {
+        fields: "+items.variant.*,+items.variant.options.*",
+      })
+      .then(({ cart: dataCart }) => setCart(dataCart))
+      .catch(() => localStorage.removeItem("cart_id"))
+  }, [cart, region])
+
+  useEffect(() => {
+    if (!cart || !region || cart.region_id === region.id) return
+    sdk.store.cart
+      .update(cart.id, { region_id: region.id })
+      .then(({ cart: dataCart }) => setCart(dataCart))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region])
+
+  const refreshCart = async () => {
+    if (!region) return
+    const { cart: dataCart } = await sdk.store.cart.create({ region_id: region.id })
+    localStorage.setItem("cart_id", dataCart.id)
+    setCart(dataCart)
+    return dataCart
+  }
+
+  const addToCart = async (variantId: string, quantity = 1): Promise<Cart> => {
+    let currentCart = cart
+    if (!currentCart) {
+      currentCart = await refreshCart()
+    }
+    if (!currentCart) throw new Error("Could not create cart")
+    const { cart: dataCart } = await sdk.store.cart.createLineItem(currentCart.id, {
+      variant_id: variantId,
+      quantity,
+    })
+    setCart(dataCart)
+    return dataCart
+  }
+
+  const updateItemQuantity = async (lineItemId: string, quantity: number): Promise<Cart> => {
+    if (!cart) throw new Error("No active cart")
+    const { cart: dataCart } = await sdk.store.cart.updateLineItem(cart.id, lineItemId, { quantity })
+    setCart(dataCart)
+    return dataCart
+  }
+
+  const removeItem = async (lineItemId: string): Promise<Cart> => {
+    if (!cart) throw new Error("No active cart")
+    await sdk.store.cart.deleteLineItem(cart.id, lineItemId)
+    const { cart: dataCart } = await sdk.store.cart.retrieve(cart.id, {
+      fields: "+items.variant.*,+items.variant.options.*",
+    })
+    setCart(dataCart)
+    return dataCart
+  }
+
+  const unsetCart = () => {
+    localStorage.removeItem("cart_id")
+    setCart(undefined)
+  }
+
+  return (
+    <CartContext.Provider value={{ cart, addToCart, updateItemQuantity, removeItem, refreshCart, unsetCart }}>
+      {children}
+    </CartContext.Provider>
+  )
+}
+
+export function useCart() {
+  const context = useContext(CartContext)
+  if (!context) throw new Error("useCart must be used within a CartProvider")
+  return context
+}

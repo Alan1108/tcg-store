@@ -1,21 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { SinglesCard } from '@/components/organisms';
 import { InputSearch, ChipFilter, ButtonSecondary, InputDropdown, ButtonIconOnly } from '@/components/atoms';
-import type { SingleCard } from '@/types';
-
-const cards: SingleCard[] = [
-  { id: '1', name: 'Charizard ex', setName: 'Obsidian Flames', setNumber: '006', game: 'pokemon', rarity: 'Ultra Rare', condition: 'NM', price: 45990, imageUrl: '', isFoil: true, language: 'EN' },
-  { id: '2', name: 'Pikachu VMAX', setName: 'Vivid Voltage', setNumber: '044', game: 'pokemon', rarity: 'Rare', condition: 'LP', price: 12990, imageUrl: '', isFoil: false, language: 'EN' },
-  { id: '3', name: 'Black Lotus', setName: 'Alpha', setNumber: '001', game: 'mtg', rarity: 'Secret', condition: 'MP', price: 299990, imageUrl: '', isFoil: false, language: 'EN' },
-  { id: '4', name: 'Dark Magician', setName: 'Legend of Blue Eyes', setNumber: '003', game: 'yugioh', rarity: 'Holo', condition: 'NM', price: 34990, imageUrl: '', isFoil: true, language: 'EN' },
-  { id: '5', name: 'Elsa, Snow Queen', setName: 'The First Chapter', setNumber: '012', game: 'lorcana', rarity: 'Uncommon', condition: 'NM', price: 8990, imageUrl: '', isFoil: false, language: 'EN' },
-  { id: '6', name: 'Monkey D. Luffy', setName: 'Romance Dawn', setNumber: '001', game: 'onepiece', rarity: 'Common', condition: 'NM', price: 3990, imageUrl: '', isFoil: false, language: 'EN' },
-  { id: '7', name: 'Mewtwo ex', setName: 'Scarlet & Violet 151', setNumber: '150', game: 'pokemon', rarity: 'Holo', condition: 'NM', price: 28990, imageUrl: '', isFoil: true, language: 'EN' },
-  { id: '8', name: 'Lightning Bolt', setName: 'Alpha', setNumber: '161', game: 'mtg', rarity: 'Common', condition: 'HP', price: 1990, imageUrl: '', isFoil: false, language: 'EN' },
-];
+import type { HttpTypes } from '@medusajs/types';
+import { getSingleCards } from '@/services/products.service';
 
 const sortOptions = [
   { value: 'newest', label: 'Más recientes' },
@@ -25,16 +14,26 @@ const sortOptions = [
 ];
 
 export default function SinglesCatalogPage() {
+  const [cards, setCards] = useState<HttpTypes.StoreProduct[]>([]);
+  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [gameFilters, setGameFilters] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    getSingleCards({ search: search || undefined, page, limit: 20 }).then(({ data, total: t }) => {
+      setCards(data);
+      setTotal(t);
+    });
+  }, [search, page]);
 
   return (
     <div className="flex flex-col">
-      <div className="bg-[var(--bg-surface)] py-6">
+      <div className="bg-bg-surface py-6">
         <div className="max-w-[1280px] mx-auto px-4 flex flex-col gap-4">
-          <h1 className="font-[family-name:var(--font-heading)] text-[28px] font-bold text-[var(--text-primary)]">Singles</h1>
-          <p className="text-sm text-[var(--text-secondary)]">Cartas individuales de todos los juegos</p>
+          <h1 className="font-heading text-[28px] font-bold text-text-primary">Singles</h1>
+          <p className="text-sm text-text-secondary">Cartas individuales de todos los juegos</p>
           <InputSearch placeholder="Buscar cartas..." value={search} onChange={setSearch} />
           {gameFilters.length > 0 && (
             <div className="flex gap-2 flex-wrap">
@@ -44,7 +43,7 @@ export default function SinglesCatalogPage() {
             </div>
           )}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[var(--text-secondary)]">{cards.length} cartas</span>
+            <span className="text-sm text-text-secondary">{total} cartas</span>
             <div className="flex items-center gap-2">
               <InputDropdown options={sortOptions} value={sortBy} onChange={setSortBy} className="w-40" />
               <ButtonSecondary label="Filtrar" />
@@ -55,19 +54,15 @@ export default function SinglesCatalogPage() {
       <div className="max-w-[1280px] mx-auto px-4 py-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {cards.map((c) => (
-            <Link key={c.id} href={`/singles/${c.id}`}>
-              <SinglesCard card={c} />
-            </Link>
+            <SinglesCard key={c.id} card={c} />
           ))}
         </div>
         <div className="flex items-center justify-center gap-1 mt-8">
-          <ButtonIconOnly icon="ChevronLeft" />
-          {[1, 2, 3].map((n) => (
-            <button key={n} className={`w-10 h-10 rounded-lg text-sm font-medium ${n === 1 ? 'bg-[var(--accent-primary)] text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'}`}>
-              {n}
-            </button>
-          ))}
-          <ButtonIconOnly icon="ChevronRight" />
+          <ButtonIconOnly icon="ChevronLeft" onClick={() => setPage((p) => Math.max(1, p - 1))} />
+          <span className="w-10 h-10 rounded-lg text-sm font-medium bg-accent-primary text-white flex items-center justify-center">
+            {page}
+          </span>
+          <ButtonIconOnly icon="ChevronRight" onClick={() => setPage((p) => p + 1)} />
         </div>
       </div>
     </div>

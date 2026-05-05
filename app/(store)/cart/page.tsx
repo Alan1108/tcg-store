@@ -1,28 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
-import { ButtonPrimary, ButtonGhost, TrustBadge, Divider, BadgeGame } from '@/components/atoms';
-import type { SealedProduct } from '@/types';
-
-interface CartItemData { id: string; product: SealedProduct; quantity: number; }
-
-const initialItems: CartItemData[] = [
-  { id: 'c1', product: { id: '1', name: 'Booster Box Scarlet & Violet 151', setName: 'Scarlet & Violet', game: 'pokemon', price: 89990, imageUrl: '', stock: 'in_stock', category: 'booster_box' }, quantity: 1 },
-  { id: 'c2', product: { id: '2', name: 'ETB Paldea Evolved', setName: 'Paldea Evolved', game: 'pokemon', price: 49990, imageUrl: '', stock: 'in_stock', category: 'etb' }, quantity: 2 },
-  { id: 'c3', product: { id: '3', name: 'Draft Booster Box Murders at Karlov Manor', setName: 'Murders at Karlov Manor', game: 'mtg', price: 119990, imageUrl: '', stock: 'in_stock', category: 'booster_box' }, quantity: 1 },
-];
-
-function formatPrice(price: number) { return '$' + price.toLocaleString('es-CL'); }
+import { ButtonPrimary, ButtonGhost, TrustBadge, Divider } from '@/components/atoms';
+import { useCart } from '@/providers/cart';
+import { formatPrice } from '@/lib/format';
 
 export default function CartPage() {
-  const [items, setItems] = useState(initialItems);
-  const subtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0);
-
-  const updateQty = (id: string, delta: number) =>
-    setItems((prev) => prev.map((i) => i.id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i));
-  const remove = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
+  const { cart, updateItemQuantity, removeItem } = useCart();
+  const items = cart?.items ?? [];
+  const currencyCode = cart?.currency_code ?? 'USD';
+  const subtotal = cart?.subtotal ?? 0;
 
   if (items.length === 0) {
     return (
@@ -43,35 +32,66 @@ export default function CartPage() {
       </div>
 
       <div className="flex flex-col">
-        {items.map((item, idx) => (
-          <div key={item.id}>
-            {idx > 0 && <Divider className="my-3" />}
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-20 rounded-lg bg-[var(--bg-elevated)] flex-shrink-0" />
-              <div className="flex-1 min-w-0 flex flex-col gap-1">
-                <span className="text-[13px] font-semibold text-[var(--text-primary)] line-clamp-1">{item.product.name}</span>
-                <span className="text-[11px] text-[var(--text-muted)]">{item.product.setName}</span>
-                <BadgeGame game={item.product.game} />
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <span className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--accent-primary)]">{formatPrice(item.product.price * item.quantity)}</span>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"><Minus className="w-3 h-3" /></button>
-                  <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                  <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"><Plus className="w-3 h-3" /></button>
-                  <button onClick={() => remove(item.id)} className="ml-1"><Trash2 className="w-4 h-4 text-[var(--danger)]" /></button>
+        {items.map((item, idx) => {
+          const imageUrl = item.variant?.product?.thumbnail ?? item.thumbnail ?? undefined;
+          return (
+            <div key={item.id}>
+              {idx > 0 && <Divider className="my-3" />}
+              <div className="flex items-center gap-3">
+                <div className="w-20 h-20 rounded-lg bg-[var(--bg-elevated)] flex-shrink-0 relative overflow-hidden">
+                  {imageUrl && (
+                    <Image src={imageUrl} alt={item.title ?? ''} fill className="object-cover" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  <span className="text-[13px] font-semibold text-[var(--text-primary)] line-clamp-1">{item.title}</span>
+                  <span className="text-[11px] text-[var(--text-muted)]">{item.variant_title}</span>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--accent-primary)]">
+                    {formatPrice((item.unit_price ?? 0) * (item.quantity ?? 1), currencyCode)}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => updateItemQuantity(item.id, Math.max(1, (item.quantity ?? 1) - 1))}
+                      className="w-7 h-7 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
+                    <button
+                      onClick={() => updateItemQuantity(item.id, (item.quantity ?? 1) + 1)}
+                      className="w-7 h-7 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                    <button onClick={() => removeItem(item.id)} className="ml-1">
+                      <Trash2 className="w-4 h-4 text-[var(--danger)]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-4 flex flex-col gap-3 mt-4">
-        <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Subtotal</span><span className="text-[var(--text-primary)]">{formatPrice(subtotal)}</span></div>
-        <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Envío estándar</span><span className="text-[var(--success)] font-medium">Gratis</span></div>
+        <div className="flex justify-between text-sm">
+          <span className="text-[var(--text-secondary)]">Subtotal</span>
+          <span className="text-[var(--text-primary)]">{formatPrice(subtotal, currencyCode)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-[var(--text-secondary)]">Envío estándar</span>
+          <span className="text-[var(--success)] font-medium">Gratis</span>
+        </div>
         <Divider />
-        <div className="flex justify-between"><span className="font-semibold text-[var(--text-primary)]">Total</span><span className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--accent-primary)]">{formatPrice(subtotal)}</span></div>
+        <div className="flex justify-between">
+          <span className="font-semibold text-[var(--text-primary)]">Total</span>
+          <span className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--accent-primary)]">
+            {formatPrice(cart?.total ?? 0, currencyCode)}
+          </span>
+        </div>
       </div>
 
       <ButtonPrimary label="Procesar pedido" fullWidth />

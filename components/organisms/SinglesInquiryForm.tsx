@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { Send, CircleCheck, MessageCircle } from 'lucide-react';
+import { submitInquiry } from '@/services/inquiries.service';
 
 interface SinglesInquiryFormProps {
-  onSubmit?: (data: FormData) => void;
+  productId?: string;
 }
 
-interface FormData {
+interface FormState {
   name: string;
   email: string;
   whatsapp: string;
@@ -16,14 +17,15 @@ interface FormData {
   message: string;
 }
 
-export function SinglesInquiryForm({ onSubmit }: SinglesInquiryFormProps) {
+export function SinglesInquiryForm({ productId }: SinglesInquiryFormProps) {
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState<FormData>({
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState<FormState>({
     name: '', email: '', whatsapp: '', cards: '', preferWhatsApp: true, message: '',
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: typeof errors = {};
     if (!form.name) newErrors.name = 'Este campo es requerido';
@@ -31,11 +33,26 @@ export function SinglesInquiryForm({ onSubmit }: SinglesInquiryFormProps) {
     if (!form.cards) newErrors.cards = 'Este campo es requerido';
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     setErrors({});
-    onSubmit?.(form);
-    setSubmitted(true);
+    setSubmitting(true);
+    try {
+      await submitInquiry({
+        customer_name: form.name,
+        email: form.email,
+        whatsapp: form.whatsapp || undefined,
+        cards_description: form.cards,
+        message: form.message || undefined,
+        prefer_whatsapp: form.preferWhatsApp,
+        product_id: productId,
+      });
+      setSubmitted(true);
+    } catch {
+      setErrors({ name: 'Error al enviar la consulta. Intenta de nuevo.' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const update = (field: keyof FormData, value: string | boolean) =>
+  const update = (field: keyof FormState, value: string | boolean) =>
     setForm((f) => ({ ...f, [field]: value }));
 
   if (submitted) {
@@ -94,9 +111,15 @@ export function SinglesInquiryForm({ onSubmit }: SinglesInquiryFormProps) {
         </Field>
       </div>
 
-      <button type="submit" className="flex items-center justify-center gap-2 w-full h-11 rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] transition-colors">
+      <button
+        type="submit"
+        disabled={submitting}
+        className="flex items-center justify-center gap-2 w-full h-11 rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] transition-colors disabled:opacity-60"
+      >
         <Send className="w-[18px] h-[18px] text-white" />
-        <span className="text-[15px] font-bold text-white">Enviar consulta</span>
+        <span className="text-[15px] font-bold text-white">
+          {submitting ? 'Enviando...' : 'Enviar consulta'}
+        </span>
       </button>
 
       <div className="h-px bg-[var(--border)]" />

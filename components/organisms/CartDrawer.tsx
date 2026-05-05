@@ -2,20 +2,20 @@
 
 import { X, Minus, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import type { CartItem } from '@/types';
+import Image from 'next/image';
+import { useCart } from '@/providers/cart';
+import { formatPrice } from '@/lib/format';
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  items: CartItem[];
 }
 
-function formatPrice(price: number) {
-  return '$' + price.toLocaleString('es-CL');
-}
-
-export function CartDrawer({ isOpen, onClose, items }: CartDrawerProps) {
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+  const { cart, updateItemQuantity, removeItem } = useCart();
+  const items = cart?.items ?? [];
+  const currencyCode = cart?.currency_code ?? 'USD';
+  const total = cart?.total ?? 0;
 
   if (!isOpen) return null;
 
@@ -43,39 +43,52 @@ export function CartDrawer({ isOpen, onClose, items }: CartDrawerProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 flex flex-col gap-3">
-            {items.map((item) => (
-              <div key={item.id} className="flex items-center gap-3 py-3 border-b border-[var(--border)]">
-                <div className="w-16 h-16 rounded-lg bg-[var(--bg-elevated)] flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="text-[13px] font-semibold text-[var(--text-primary)] line-clamp-1">{item.product.name}</span>
-                  <span className="text-xs text-[var(--text-muted)] block">{'setName' in item.product ? item.product.setName : ''}</span>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="font-[family-name:var(--font-heading)] text-base font-bold text-[var(--accent-primary)]">
-                    {formatPrice(item.product.price)}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button className="w-6 h-6 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center">
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                    <button className="w-6 h-6 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center">
-                      <Plus className="w-3 h-3" />
-                    </button>
-                    <button className="ml-1">
-                      <Trash2 className="w-3.5 h-3.5 text-[var(--danger)]" />
-                    </button>
+            {items.map((item) => {
+              const imageUrl = item.variant?.product?.thumbnail ?? item.thumbnail ?? undefined;
+              return (
+                <div key={item.id} className="flex items-center gap-3 py-3 border-b border-[var(--border)]">
+                  <div className="w-16 h-16 rounded-lg bg-[var(--bg-elevated)] flex-shrink-0 relative overflow-hidden">
+                    {imageUrl && (
+                      <Image src={imageUrl} alt={item.title ?? ''} fill className="object-cover" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[13px] font-semibold text-[var(--text-primary)] line-clamp-1">{item.title}</span>
+                    <span className="text-xs text-[var(--text-muted)] block">{item.variant_title}</span>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="font-[family-name:var(--font-heading)] text-base font-bold text-[var(--accent-primary)]">
+                      {formatPrice(item.unit_price ?? 0, currencyCode)}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => updateItemQuantity(item.id, Math.max(1, (item.quantity ?? 1) - 1))}
+                        className="w-6 h-6 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
+                      <button
+                        onClick={() => updateItemQuantity(item.id, (item.quantity ?? 1) + 1)}
+                        className="w-6 h-6 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => removeItem(item.id)} className="ml-1">
+                        <Trash2 className="w-3.5 h-3.5 text-[var(--danger)]" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="px-5 pt-4 pb-6 flex flex-col gap-3 border-t border-[var(--border)]">
             <div className="flex justify-between">
               <span className="font-semibold text-[var(--text-primary)]">Total</span>
               <span className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--accent-primary)]">
-                {formatPrice(total)}
+                {formatPrice(total, currencyCode)}
               </span>
             </div>
             <Link

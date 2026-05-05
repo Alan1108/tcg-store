@@ -1,42 +1,44 @@
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { BadgeGame, BadgeStock, ButtonGhost, TrustBadge, Divider } from '@/components/atoms';
 import { SealedProductCard } from '@/components/organisms';
-import { BadgeGame, BadgeStock, ButtonPrimary, ButtonGhost, TrustBadge, Divider } from '@/components/atoms';
-import type { SealedProduct } from '@/types';
+import { getSealedProductById, getSealedProducts } from '@/services/products.service';
+import type { GameSystem } from '@/types';
+import type { HttpTypes } from '@medusajs/types';
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { AddToCartButton } from './add-to-cart-button';
+import { formatPrice } from '@/lib/format';
 
-const product: SealedProduct = {
-  id: '1', name: 'Booster Box Scarlet & Violet 151', setName: 'Scarlet & Violet',
-  game: 'pokemon', price: 89990, imageUrl: '', stock: 'in_stock', category: 'booster_box',
-  description: 'Contiene 36 sobres de la expansión Scarlet & Violet 151. Cada sobre incluye 10 cartas.',
-};
-
-const related: SealedProduct[] = [
-  { id: '2', name: 'ETB Paldea Evolved', setName: 'Paldea Evolved', game: 'pokemon', price: 49990, imageUrl: '', stock: 'in_stock', category: 'etb' },
-  { id: '3', name: 'Booster Pack Temporal Forces', setName: 'Temporal Forces', game: 'pokemon', price: 5990, imageUrl: '', stock: 'in_stock', category: 'booster_pack' },
-  { id: '4', name: 'ETB Obsidian Flames', setName: 'Obsidian Flames', game: 'pokemon', price: 54990, imageUrl: '', stock: 'low_stock', category: 'etb' },
-];
-
-function formatPrice(price: number) {
-  return '$' + price.toLocaleString('es-CL');
+interface Props {
+  params: Promise<{ id: string }>;
 }
 
-function Accordion({ title, children }: { title: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div>
-      <button onClick={() => setOpen(!open)} className="flex items-center justify-between w-full py-4 px-4">
-        <span className="text-sm font-semibold text-[var(--text-primary)]">{title}</span>
-        <ChevronDown className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && <div className="px-4 pb-4 text-sm text-[var(--text-secondary)] leading-relaxed">{children}</div>}
-    </div>
-  );
+function getStockStatus(qty?: number | null, manageInventory?: boolean | null): 'in_stock' | 'low_stock' | 'out_of_stock' {
+  if (manageInventory === false) return 'in_stock';
+  if (!qty || qty <= 0) return 'out_of_stock';
+  if (qty <= 3) return 'low_stock';
+  return 'in_stock';
 }
 
-export default function SealedDetailPage() {
+export default async function SealedDetailPage({ params }: Props) {
+  const { id } = await params;
+  const product = await getSealedProductById(id).catch(() => null);
+  if (!product) return notFound();
+
+  const related = await getSealedProducts({ limit: 4 }).then((r) =>
+    r.data.filter((p) => p.id !== product.id).slice(0, 3)
+  ).catch(() => [] as HttpTypes.StoreProduct[]);
+
+  const game = (product.metadata?.game as GameSystem) ?? '';
+  const setName = (product.metadata?.set_name as string) ?? '';
+  const category = (product.metadata?.category as string) ?? '';
+  const firstVariant = product.variants?.[0];
+  const price = firstVariant?.calculated_price?.calculated_amount ?? 0;
+  const currencyCode = firstVariant?.calculated_price?.currency_code ?? 'USD';
+  const stockStatus = getStockStatus(firstVariant?.inventory_quantity, firstVariant?.manage_inventory);
+  const imageUrl = product.thumbnail ?? product.images?.[0]?.url;
+
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-3 px-4 py-3">
@@ -46,22 +48,30 @@ export default function SealedDetailPage() {
           <span>›</span>
           <Link href="/sealed" className="hover:text-[var(--text-primary)]">Sobres y Cajas</Link>
           <span>›</span>
-          <span className="text-[var(--text-primary)]">{product.name}</span>
+          <span className="text-[var(--text-primary)]">{product.title}</span>
         </div>
       </div>
 
-      <div className="w-full h-[300px] md:h-[390px] bg-[var(--bg-elevated)]" />
+      <div className="relative w-full h-[300px] md:h-[390px] bg-[var(--bg-elevated)]">
+        {imageUrl && (
+          <Image src={imageUrl} alt={product.title ?? ''} fill className="object-contain p-4" />
+        )}
+      </div>
 
       <div className="max-w-[1280px] mx-auto w-full px-4 flex flex-col gap-3 py-4">
         <div className="flex items-center gap-2">
-          <BadgeGame game={product.game} />
-          <BadgeStock status={product.stock} />
+          {game && <BadgeGame game={game} />}
+          <BadgeStock status={stockStatus} />
         </div>
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[var(--text-primary)]">{product.name}</h1>
-        <p className="text-sm text-[var(--text-secondary)]">{product.setName}</p>
-        <span className="font-[family-name:var(--font-heading)] text-[32px] font-bold text-[var(--accent-primary)]">{formatPrice(product.price)}</span>
-        <ButtonPrimary label="Agregar al carrito" fullWidth />
-        <ButtonGhost label="Seguir comprando" fullWidth />
+        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[var(--text-primary)]">{product.title}</h1>
+        <p className="text-sm text-[var(--text-secondary)]">
+          {(product.metadata?.set_name as string) ?? product.subtitle ?? ''}
+        </p>
+        <span className="font-[family-name:var(--font-heading)] text-[32px] font-bold text-[var(--accent-primary)]">
+          {formatPrice(price, currencyCode)}
+        </span>
+        <AddToCartButton variantId={firstVariant?.id} disabled={stockStatus === 'out_of_stock'} />
+        <Link href="/sealed"><ButtonGhost label="Seguir comprando" fullWidth /></Link>
       </div>
 
       <div className="flex items-center justify-around px-4 py-4 max-w-[1280px] mx-auto w-full">
@@ -71,35 +81,38 @@ export default function SealedDetailPage() {
         <TrustBadge icon="Headphones" label="Soporte 24/7" />
       </div>
 
-      <Divider />
-      <Accordion title="Descripción">
-        <p>{product.description}</p>
-      </Accordion>
-      <Divider />
-      <Accordion title="Atributos del Producto">
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between"><span>Juego</span><span className="font-medium text-[var(--text-primary)]">Pokémon</span></div>
-          <div className="flex justify-between"><span>Set</span><span className="font-medium text-[var(--text-primary)]">{product.setName}</span></div>
-          <div className="flex justify-between"><span>Tipo</span><span className="font-medium text-[var(--text-primary)]">Booster Box</span></div>
-          <div className="flex justify-between"><span>Contenido</span><span className="font-medium text-[var(--text-primary)]">36 sobres</span></div>
-        </div>
-      </Accordion>
-      <Divider />
-      <Accordion title="Envío y Devoluciones">
-        <p>Envío estándar a todo Ecuador en 3-5 días hábiles. Devoluciones aceptadas dentro de 7 días con el producto sellado.</p>
-      </Accordion>
-      <Divider />
+      {product.description && (
+        <>
+          <Divider />
+          <div className="px-4 py-4 text-sm text-[var(--text-secondary)] leading-relaxed max-w-[1280px] mx-auto w-full">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Descripción</h2>
+            <p>{product.description}</p>
+          </div>
+        </>
+      )}
 
-      <div className="px-4 py-6 flex flex-col gap-4">
-        <h2 className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--text-primary)]">También te puede interesar</h2>
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {related.map((p) => (
-            <div key={p.id} className="min-w-[175px]">
-              <Link href={`/sealed/${p.id}`}><SealedProductCard product={p} /></Link>
-            </div>
-          ))}
+      <Divider />
+      <div className="px-4 py-4 max-w-[1280px] mx-auto w-full">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Atributos del Producto</h2>
+        <div className="flex flex-col gap-2 text-sm text-[var(--text-secondary)]">
+          {game && <div className="flex justify-between"><span>Juego</span><span className="font-medium text-[var(--text-primary)]">{game}</span></div>}
+          {setName && <div className="flex justify-between"><span>Set</span><span className="font-medium text-[var(--text-primary)]">{setName}</span></div>}
+          {category && <div className="flex justify-between"><span>Tipo</span><span className="font-medium text-[var(--text-primary)]">{category}</span></div>}
         </div>
       </div>
+
+      {related.length > 0 && (
+        <div className="px-4 py-6 flex flex-col gap-4">
+          <h2 className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--text-primary)]">También te puede interesar</h2>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {related.map((p) => (
+              <div key={p.id} className="min-w-[175px]">
+                <Link href={`/sealed/${p.id}`}><SealedProductCard product={p} /></Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

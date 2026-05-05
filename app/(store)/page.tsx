@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { HeroBanner, GameSystemGrid, FeaturedCarousel } from '@/components/organisms';
 import { TrustBadge } from '@/components/atoms';
-import type { SealedProduct } from '@/types';
 import { seoConfig } from '@/lib/seo';
+import { getFeaturedProducts } from '@/services/products.service';
 
 export const metadata: Metadata = {
   title: "Tienda de cartas Pokémon y One Piece en Ecuador",
@@ -13,14 +13,9 @@ export const metadata: Metadata = {
   },
 };
 
-const placeholderProducts: SealedProduct[] = [
-  { id: '1', name: 'Booster Box Scarlet & Violet 151', setName: 'Scarlet & Violet', game: 'pokemon', price: 89990, imageUrl: '', stock: 'in_stock', category: 'booster_box' },
-  { id: '2', name: 'Draft Booster Box Murders at Karlov Manor', setName: 'Murders at Karlov Manor', game: 'mtg', price: 119990, imageUrl: '', stock: 'in_stock', category: 'booster_box' },
-  { id: '3', name: 'Booster Box Age of Overlord', setName: 'Age of Overlord', game: 'yugioh', price: 74990, imageUrl: '', stock: 'low_stock', category: 'booster_box' },
-  { id: '4', name: 'Booster Box Azurada', setName: 'Azurada', game: 'lorcana', price: 94990, imageUrl: '', stock: 'in_stock', category: 'booster_box' },
-];
+export default async function HomePage() {
+  const products = await getFeaturedProducts(8).catch(() => []);
 
-export default function HomePage() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -60,7 +55,6 @@ export default function HomePage() {
     <div className="flex flex-col gap-8 md:gap-12 pb-8 md:pb-12">
       <script
         type="application/ld+json"
-        // JSON-LD improves eligibility for rich results in Google.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <div className="px-4 md:px-0 max-w-[1280px] mx-auto w-full">
@@ -70,7 +64,7 @@ export default function HomePage() {
         <GameSystemGrid />
       </div>
       <div className="px-4 md:px-0 max-w-[1280px] mx-auto w-full">
-        <FeaturedCarousel products={placeholderProducts} />
+        <FeaturedCarousel products={products} />
       </div>
       <div className="flex items-center justify-around px-4 max-w-[1280px] mx-auto w-full">
         <TrustBadge icon="ShieldCheck" label="Pago seguro" />
