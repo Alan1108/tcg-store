@@ -72,25 +72,64 @@ export default async function HomePage() {
         <TrustBadge icon="RotateCcw" label="Devoluciones" />
         <TrustBadge icon="Headphones" label="Soporte 24/7" />
       </div>
-      <section className="px-4 md:px-0 max-w-[1280px] mx-auto w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 md:p-8">
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[var(--text-primary)] md:text-3xl">
-          Tienda de cartas TCG en Ecuador: Pokemon y One Piece
-        </h1>
-        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)] md:text-base">
-          En Kādo Gallery ayudamos a la comunidad TCG de Ecuador a encontrar cartas originales de Pokemon y One Piece en un solo lugar.
-          Si buscas una tienda de cartas en Quito, Guayaquil o Cuenca, te ofrecemos catálogo actualizado, pagos seguros y envíos nacionales con Servientrega.
-        </p>
-        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)] md:text-base">
-          Puedes comprar con DeUna, tarjeta de crédito, tarjeta de débito o transferencia bancaria. Nuestro enfoque es ofrecer productos auténticos,
-          buena comunicación y una experiencia de compra clara para coleccionistas y jugadores competitivos.
-        </p>
-        <h2 className="mt-6 font-[family-name:var(--font-heading)] text-xl font-semibold text-[var(--text-primary)]">
-          Donde comprar cartas Pokemon y One Piece en Ecuador
-        </h2>
-        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)] md:text-base">
-          Realizamos envíos a todo el país y priorizamos atención para Quito, Guayaquil y Cuenca. Si estabas buscando donde comprar cartas Pokemon
-          en Ecuador o donde comprar cartas de One Piece con despacho confiable, en Kādo Gallery encontrarás opciones para empezar o mejorar tu colección.
-        </p>
+      <section className="px-4 md:px-0 max-w-[1280px] mx-auto w-full rounded-2xl overflow-hidden border border-border">
+        {/* Header row */}
+        <div className="bg-linear-to-r from-(--accent-primary)/5 to-bg-surface border-b border-border px-6 md:px-8 py-5">
+          <h1 className="font-heading text-2xl md:text-3xl font-bold text-text-primary">
+            Tienda de cartas TCG en Ecuador:{' '}
+            <span className="text-accent-primary">Pokémon y One Piece</span>
+          </h1>
+        </div>
+
+        {/* Two-column body */}
+        <div className="bg-bg-surface grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+
+          {/* Left: Brand pitch */}
+          <div className="flex flex-col gap-4 p-6 md:p-8">
+            <p className="text-sm leading-7 text-text-secondary md:text-base">
+              En Kādo Gallery ayudamos a la comunidad TCG de Ecuador a encontrar cartas originales de Pokémon y
+              One Piece en un solo lugar. Si buscas una tienda de cartas en Quito, Guayaquil o Cuenca, te ofrecemos
+              catálogo actualizado, pagos seguros y envíos nacionales con Servientrega.
+            </p>
+            <p className="text-sm leading-7 text-text-secondary md:text-base">
+              Nuestro enfoque es ofrecer productos auténticos, buena comunicación y una experiencia de compra
+              clara para coleccionistas y jugadores competitivos.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {['Quito', 'Guayaquil', 'Cuenca', 'Todo Ecuador'].map((city) => (
+                <span
+                  key={city}
+                  className="px-3 py-1 rounded-full bg-(--accent-primary)/10 text-accent-primary text-xs font-semibold border border-border-accent"
+                >
+                  {city}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Shipping & payment */}
+          <div className="flex flex-col gap-4 p-6 md:p-8">
+            <h2 className="font-heading text-xl font-semibold text-text-primary">
+              Donde comprar cartas Pokémon y One Piece en Ecuador
+            </h2>
+            <p className="text-sm leading-7 text-text-secondary md:text-base">
+              Realizamos envíos a todo el país y priorizamos atención para Quito, Guayaquil y Cuenca. Si estabas
+              buscando dónde comprar cartas Pokémon en Ecuador o cartas de One Piece con despacho confiable,
+              en Kādo Gallery encontrarás opciones para empezar o mejorar tu colección.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {['DeUna', 'Tarjeta de crédito', 'Tarjeta de débito', 'Transferencia bancaria'].map((method) => (
+                <span
+                  key={method}
+                  className="px-2.5 py-1 rounded-lg bg-bg-elevated text-text-secondary text-xs font-medium border border-border"
+                >
+                  {method}
+                </span>
+              ))}
+            </div>
+          </div>
+
+        </div>
       </section>
     </div>
   );

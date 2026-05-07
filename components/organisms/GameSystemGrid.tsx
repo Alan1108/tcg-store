@@ -1,11 +1,8 @@
 import Link from 'next/link';
-import { Zap, Shield, Star, Sparkles, Swords } from 'lucide-react';
+import { Zap, Swords } from 'lucide-react';
 
 const games = [
   { key: 'pokemon', name: 'Pokémon', color: '#F5D623', Icon: Zap },
-  { key: 'mtg', name: 'Magic: The Gathering', color: '#C8A84E', Icon: Shield },
-  { key: 'yugioh', name: 'Yu-Gi-Oh!', color: '#9B59B6', Icon: Star },
-  { key: 'lorcana', name: 'Lorcana', color: '#2DD4BF', Icon: Sparkles },
   { key: 'onepiece', name: 'One Piece', color: '#E94560', Icon: Swords },
 ];
 
@@ -22,7 +19,7 @@ export function GameSystemGrid() {
           }}
         >
           <Icon className="w-8 h-8" style={{ color }} />
-          <span className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--text-primary)]">
+          <span className="font-heading text-xl font-bold text-text-primary">
             {name}
           </span>
           <span className="text-[13px] font-medium" style={{ color }}>

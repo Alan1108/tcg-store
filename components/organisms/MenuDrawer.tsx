@@ -30,24 +30,24 @@ export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-14 px-5">
-            <span className="font-[family-name:var(--font-heading)] text-[22px] font-bold text-[var(--accent-primary)]">
+            <span className="font-heading text-[22px] font-bold text-accent-primary">
               TCG Shop
             </span>
             <button
               onClick={onClose}
-              className="flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--bg-elevated)]"
+              className="flex items-center justify-center w-9 h-9 rounded-lg bg-bg-elevated"
             >
-              <X className="w-5 h-5 text-[var(--text-primary)]" />
+              <X className="w-5 h-5 text-text-primary" />
             </button>
           </div>
 
           <div className="flex items-center h-14 px-5">
-            <div className="flex items-center gap-2.5 rounded-full bg-[var(--bg-elevated)] h-10 px-3.5 w-full">
-              <Search className="w-4 h-4 text-[var(--text-muted)]" />
+            <div className="flex items-center gap-2.5 rounded-full bg-bg-elevated h-10 px-3.5 w-full">
+              <Search className="w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="Buscar productos..."
-                className="bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none w-full"
+                className="bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none w-full"
               />
             </div>
           </div>
@@ -60,8 +60,8 @@ export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
                 onClick={onClose}
                 className="flex items-center gap-3.5 h-12 px-5"
               >
-                <item.icon className="w-5 h-5 text-[var(--text-secondary)]" />
-                <span className="text-[15px] font-medium text-[var(--text-primary)]">
+                <item.icon className="w-5 h-5 text-text-secondary" />
+                <span className="text-[15px] font-medium text-text-primary">
                   {item.label}
                 </span>
               </Link>
@@ -73,19 +73,19 @@ export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           </div>
 
           <div className="flex items-center gap-4 h-12 px-5">
-            <Globe className="w-[18px] h-[18px] text-[var(--text-secondary)]" />
-            <div className="flex items-center justify-center rounded-md bg-[var(--accent-primary)] px-2.5 py-1">
+            <Globe className="w-[18px] h-[18px] text-text-secondary" />
+            <div className="flex items-center justify-center rounded-md bg-accent-primary px-2.5 py-1">
               <span className="text-[13px] font-semibold text-white">ES</span>
             </div>
-            <div className="flex items-center justify-center rounded-md bg-[var(--bg-elevated)] px-2.5 py-1">
-              <span className="text-[13px] font-medium text-[var(--text-secondary)]">EN</span>
+            <div className="flex items-center justify-center rounded-md bg-bg-elevated px-2.5 py-1">
+              <span className="text-[13px] font-medium text-text-secondary">EN</span>
             </div>
           </div>
 
           <div className="flex items-center justify-center gap-5 h-12 px-5">
             {[Camera, Share2, Music].map((Icon, i) => (
-              <div key={i} className="flex items-center justify-center w-10 h-10 rounded-[10px] bg-[var(--bg-elevated)]">
-                <Icon className="w-5 h-5 text-[var(--text-secondary)]" />
+              <div key={i} className="flex items-center justify-center w-10 h-10 rounded-[10px] bg-bg-elevated">
+                <Icon className="w-5 h-5 text-text-secondary" />
               </div>
             ))}
           </div>

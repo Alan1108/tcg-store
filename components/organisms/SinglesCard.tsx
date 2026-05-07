@@ -22,7 +22,7 @@ const conditionColors: Record<string, string> = {
   NM: '#22C55E', LP: '#F59E0B', MP: '#F97316', HP: '#EF4444', DMG: '#991B1B',
 };
 const rarityColors: Record<string, string> = {
-  Common: '#9494AC', Uncommon: '#60A5FA', Rare: '#F5A623', Holo: '#A78BFA', 'Ultra Rare': '#F472B6', Secret: '#FBBF24',
+  Common: '#9494AC', Uncommon: '#88AAFF', Rare: '#F5A623', Holo: '#A78BFA', 'Ultra Rare': '#F472B6', Secret: '#FBBF24',
 };
 
 export function SinglesCard({ card, onWhatsApp }: SinglesCardProps) {

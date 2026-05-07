@@ -22,8 +22,6 @@ const legalLinks = [
   { label: 'Política de Cookies', href: '#' },
 ];
 
-const paymentMethods = ['VISA', 'MC', 'PSE', 'DEPÓ'];
-
 export function FooterDesktop() {
   return (
     <footer className="hidden md:block w-full bg-bg-surface border-t border-border">
@@ -39,13 +37,6 @@ export function FooterDesktop() {
             <p className="text-[13px] leading-normal text-text-secondary">
               Tu tienda de cartas coleccionables en Ecuador. Sobres, cajas y singles de los mejores juegos del mundo.
             </p>
-            <div className="flex gap-3">
-              {[Camera, Share2, Music].map((Icon, i) => (
-                <div key={i} className="flex items-center justify-center w-8 h-8 rounded-full bg-bg-elevated">
-                  <Icon className="w-4 h-4 text-text-secondary" />
-                </div>
-              ))}
-            </div>
           </div>
 
           {[
@@ -70,14 +61,6 @@ export function FooterDesktop() {
           <span className="text-xs text-text-muted">
             © 2026 TCG Shop. Todos los derechos reservados.
           </span>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-text-muted">Pagos seguros:</span>
-            {paymentMethods.map((m) => (
-              <div key={m} className="flex items-center justify-center w-10 h-[26px] rounded bg-bg-elevated">
-                <span className="text-[9px] font-bold text-text-secondary">{m}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </footer>

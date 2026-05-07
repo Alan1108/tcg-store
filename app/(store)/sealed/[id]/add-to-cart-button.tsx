@@ -15,7 +15,7 @@ export function AddToCartButton({ variantId, disabled }: AddToCartButtonProps) {
     <button
       onClick={() => variantId && addToCart(variantId, 1)}
       disabled={disabled || !variantId}
-      className="flex items-center justify-center gap-2 w-full h-11 rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex items-center justify-center gap-2 w-full h-11 rounded-lg bg-accent-primary hover:bg-[var(--accent-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <ShoppingCart className="w-4 h-4 text-white" />
       <span className="text-sm font-semibold text-white">

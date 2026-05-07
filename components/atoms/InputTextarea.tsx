@@ -16,7 +16,7 @@ export function InputTextarea({ placeholder = '', value, onChange, label, rows =
       onChange={(e) => onChange?.(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className={`rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)] p-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none w-full resize-none ${className}`}
+      className={`rounded-lg bg-bg-elevated border border-[var(--border)] p-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none w-full resize-none ${className}`}
     />
   );
 
@@ -24,7 +24,7 @@ export function InputTextarea({ placeholder = '', value, onChange, label, rows =
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[13px] font-medium text-[var(--text-primary)]">{label}</label>
+      <label className="text-[13px] font-medium text-text-primary">{label}</label>
       {textarea}
     </div>
   );

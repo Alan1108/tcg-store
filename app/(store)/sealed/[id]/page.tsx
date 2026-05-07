@@ -42,17 +42,17 @@ export default async function SealedDetailPage({ params }: Props) {
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-3 px-4 py-3">
-        <Link href="/sealed"><ArrowLeft className="w-5 h-5 text-[var(--text-secondary)]" /></Link>
-        <div className="flex items-center gap-2 text-[13px] text-[var(--text-muted)]">
-          <Link href="/" className="hover:text-[var(--text-primary)]">Inicio</Link>
+        <Link href="/sealed"><ArrowLeft className="w-5 h-5 text-text-secondary" /></Link>
+        <div className="flex items-center gap-2 text-[13px] text-text-muted">
+          <Link href="/" className="hover:text-text-primary">Inicio</Link>
           <span>›</span>
-          <Link href="/sealed" className="hover:text-[var(--text-primary)]">Sobres y Cajas</Link>
+          <Link href="/sealed" className="hover:text-text-primary">Sobres y Cajas</Link>
           <span>›</span>
-          <span className="text-[var(--text-primary)]">{product.title}</span>
+          <span className="text-text-primary">{product.title}</span>
         </div>
       </div>
 
-      <div className="relative w-full h-[300px] md:h-[390px] bg-[var(--bg-elevated)]">
+      <div className="relative w-full h-[300px] md:h-[390px] bg-bg-elevated">
         {imageUrl && (
           <Image src={imageUrl} alt={product.title ?? ''} fill className="object-contain p-4" />
         )}
@@ -63,11 +63,11 @@ export default async function SealedDetailPage({ params }: Props) {
           {game && <BadgeGame game={game} />}
           <BadgeStock status={stockStatus} />
         </div>
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[var(--text-primary)]">{product.title}</h1>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <h1 className="font-heading text-2xl font-bold text-text-primary">{product.title}</h1>
+        <p className="text-sm text-text-secondary">
           {(product.metadata?.set_name as string) ?? product.subtitle ?? ''}
         </p>
-        <span className="font-[family-name:var(--font-heading)] text-[32px] font-bold text-[var(--accent-primary)]">
+        <span className="font-heading text-[32px] font-bold text-accent-primary">
           {formatPrice(price, currencyCode)}
         </span>
         <AddToCartButton variantId={firstVariant?.id} disabled={stockStatus === 'out_of_stock'} />
@@ -84,8 +84,8 @@ export default async function SealedDetailPage({ params }: Props) {
       {product.description && (
         <>
           <Divider />
-          <div className="px-4 py-4 text-sm text-[var(--text-secondary)] leading-relaxed max-w-[1280px] mx-auto w-full">
-            <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Descripción</h2>
+          <div className="px-4 py-4 text-sm text-text-secondary leading-relaxed max-w-[1280px] mx-auto w-full">
+            <h2 className="text-sm font-semibold text-text-primary mb-2">Descripción</h2>
             <p>{product.description}</p>
           </div>
         </>
@@ -93,17 +93,17 @@ export default async function SealedDetailPage({ params }: Props) {
 
       <Divider />
       <div className="px-4 py-4 max-w-[1280px] mx-auto w-full">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Atributos del Producto</h2>
-        <div className="flex flex-col gap-2 text-sm text-[var(--text-secondary)]">
-          {game && <div className="flex justify-between"><span>Juego</span><span className="font-medium text-[var(--text-primary)]">{game}</span></div>}
-          {setName && <div className="flex justify-between"><span>Set</span><span className="font-medium text-[var(--text-primary)]">{setName}</span></div>}
-          {category && <div className="flex justify-between"><span>Tipo</span><span className="font-medium text-[var(--text-primary)]">{category}</span></div>}
+        <h2 className="text-sm font-semibold text-text-primary mb-3">Atributos del Producto</h2>
+        <div className="flex flex-col gap-2 text-sm text-text-secondary">
+          {game && <div className="flex justify-between"><span>Juego</span><span className="font-medium text-text-primary">{game}</span></div>}
+          {setName && <div className="flex justify-between"><span>Set</span><span className="font-medium text-text-primary">{setName}</span></div>}
+          {category && <div className="flex justify-between"><span>Tipo</span><span className="font-medium text-text-primary">{category}</span></div>}
         </div>
       </div>
 
       {related.length > 0 && (
         <div className="px-4 py-6 flex flex-col gap-4">
-          <h2 className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--text-primary)]">También te puede interesar</h2>
+          <h2 className="font-heading text-xl font-bold text-text-primary">También te puede interesar</h2>
           <div className="flex gap-4 overflow-x-auto pb-2">
             {related.map((p) => (
               <div key={p.id} className="min-w-[175px]">

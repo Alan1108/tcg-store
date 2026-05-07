@@ -11,7 +11,6 @@ type CardSpec = {
   driftPx: number;
   rotDeg: number;
   blurPx: number;
-  /** Vertical start in vh; spread across upper viewport so first paint looks populated */
   y0Vh: number;
   fallVh: number;
   opacityStart: number;
@@ -28,6 +27,7 @@ function buildCardSpecs(): CardSpec[] {
           : 28 + ((i * 13) % 34);
     const fallVh = 118 + (i % 5) * 6;
     const opacityStart = y0Vh < 2 ? 0.32 : 0.4 + (i % 4) * 0.04;
+
     return {
       id: i,
       leftPct: ((i * 23.7 + 5) % 96) + 2,
@@ -46,13 +46,23 @@ function buildCardSpecs(): CardSpec[] {
 
 const SPECS = buildCardSpecs();
 
-export function ComingSoonCardRain() {
+export type AmbientCardRainVariant = "dark" | "light";
+
+type AmbientCardRainProps = {
+  variant?: AmbientCardRainVariant;
+};
+
+export function AmbientCardRain({ variant = "dark" }: AmbientCardRainProps) {
+  const isDark = variant === "dark";
+  const wrapClass = isDark ? "coming-soon-card-rain" : "store-ambient-card-rain";
+  const itemClass = isDark ? "coming-soon-card-rain-item" : "store-ambient-card-rain-item";
+
   return (
-    <div className="coming-soon-card-rain" aria-hidden>
+    <div className={wrapClass} aria-hidden>
       {SPECS.map((c) => (
         <span
           key={c.id}
-          className="coming-soon-card-rain-item"
+          className={itemClass}
           style={
             {
               left: `${c.leftPct}%`,

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
-import { ComingSoonCardRain } from "@/components/molecules/ComingSoonCardRain";
+import { AmbientCardRain } from "@/components/molecules/AmbientCardRain";
 
 export const metadata: Metadata = {
   title: "Próximamente — Kādo Gallery",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function ComingSoonPage() {
   return (
     <main className="coming-soon-page flex flex-1 flex-col items-center justify-center px-6 py-16">
-      <ComingSoonCardRain />
+      <AmbientCardRain variant="dark" />
       <div className="coming-soon-inner flex w-full max-w-lg flex-col items-center text-center">
         <div className="coming-soon-logo-shell mb-10 w-full max-w-md px-2">
           <Image

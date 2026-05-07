@@ -12,7 +12,7 @@ export function TrustBadge({ icon = 'ShieldCheck', label }: TrustBadgeProps) {
   return (
     <div className="flex flex-col items-center gap-1.5 py-3 px-4">
       <IconComp className="w-6 h-6 text-[var(--success)]" />
-      <span className="text-[10px] font-medium text-[var(--text-secondary)] text-center">{label}</span>
+      <span className="text-[10px] font-medium text-text-secondary text-center">{label}</span>
     </div>
   );
 }

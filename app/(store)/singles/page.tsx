@@ -38,7 +38,7 @@ export default function SinglesCatalogPage() {
           {gameFilters.length > 0 && (
             <div className="flex gap-2 flex-wrap">
               {gameFilters.map((g) => (
-                <ChipFilter key={g} label={g} color="#4B8DF5" onRemove={() => setGameFilters((f) => f.filter((x) => x !== g))} />
+                <ChipFilter key={g} label={g} color="#4488FF" onRemove={() => setGameFilters((f) => f.filter((x) => x !== g))} />
               ))}
             </div>
           )}

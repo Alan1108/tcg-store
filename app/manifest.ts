@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Tienda online de cartas Pokemon y One Piece en Ecuador.",
     start_url: "/",
     display: "standalone",
-    background_color: "#08051c",
-    theme_color: "#08051c",
+    background_color: "#eeeeff",
+    theme_color: "#4488ff",
     lang: "es-EC",
     icons: [
       {

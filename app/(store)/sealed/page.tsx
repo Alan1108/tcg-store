@@ -36,12 +36,12 @@ export default function SealedCatalogPage() {
     <div className="flex flex-col">
       <div className="bg-[var(--bg-surface)] py-6">
         <div className="max-w-[1280px] mx-auto px-4 flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-[13px] text-[var(--text-muted)]">
-            <Link href="/" className="hover:text-[var(--text-primary)]">Inicio</Link>
+          <div className="flex items-center gap-2 text-[13px] text-text-muted">
+            <Link href="/" className="hover:text-text-primary">Inicio</Link>
             <span>›</span>
-            <span className="text-[var(--text-primary)]">Sobres y Cajas</span>
+            <span className="text-text-primary">Sobres y Cajas</span>
           </div>
-          <h1 className="font-[family-name:var(--font-heading)] text-[28px] font-bold text-[var(--text-primary)]">
+          <h1 className="font-heading text-[28px] font-bold text-text-primary">
             Sobres y Cajas
           </h1>
           <InputSearch placeholder="Buscar productos..." value={search} onChange={setSearch} />
@@ -51,7 +51,7 @@ export default function SealedCatalogPage() {
             ))}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[var(--text-secondary)]">{total} productos</span>
+            <span className="text-sm text-text-secondary">{total} productos</span>
             <div className="flex items-center gap-2">
               <InputDropdown options={sortOptions} value={sortBy} onChange={setSortBy} className="w-40" />
               <ButtonSecondary label="Filtrar" />
@@ -72,7 +72,7 @@ export default function SealedCatalogPage() {
         </div>
         <div className="flex items-center justify-center gap-1 mt-8">
           <ButtonIconOnly icon="ChevronLeft" onClick={() => setPage((p) => Math.max(1, p - 1))} />
-          <span className="w-10 h-10 rounded-lg text-sm font-medium bg-[var(--accent-primary)] text-white flex items-center justify-center">
+          <span className="w-10 h-10 rounded-lg text-sm font-medium bg-accent-primary text-white flex items-center justify-center">
             {page}
           </span>
           <ButtonIconOnly icon="ChevronRight" onClick={() => setPage((p) => p + 1)} />

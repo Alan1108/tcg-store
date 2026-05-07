@@ -21,22 +21,22 @@ export default async function InquiryPage({ searchParams }: Props) {
       <SinglesInquiryForm productId={productId} />
       <Divider />
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5 flex flex-col gap-4">
-        <h3 className="text-base font-bold text-[var(--text-primary)]">¿Cómo funciona?</h3>
+        <h3 className="text-base font-bold text-text-primary">¿Cómo funciona?</h3>
         <div className="flex flex-col gap-3">
           {steps.map((s) => (
             <div key={s.num} className="flex items-start gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--accent-primary)] text-white text-sm font-bold flex-shrink-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent-primary text-white text-sm font-bold flex-shrink-0">
                 {s.num}
               </div>
-              <p className="text-sm text-[var(--text-secondary)] pt-1">{s.text}</p>
+              <p className="text-sm text-text-secondary pt-1">{s.text}</p>
             </div>
           ))}
         </div>
       </div>
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5 flex flex-col items-center gap-3">
         <MessageCircle className="w-8 h-8 text-[var(--whatsapp)]" />
-        <h3 className="text-base font-bold text-[var(--text-primary)]">Contacto directo</h3>
-        <p className="text-sm text-[var(--text-secondary)] text-center">¿Prefieres contactarnos directamente?</p>
+        <h3 className="text-base font-bold text-text-primary">Contacto directo</h3>
+        <p className="text-sm text-text-secondary text-center">¿Prefieres contactarnos directamente?</p>
         <ButtonWhatsApp label="Escribir por WhatsApp" />
       </div>
     </div>

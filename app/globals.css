@@ -2,15 +2,15 @@
 @import "tailwindcss";
 
 :root {
-  --accent-primary: #4B8DF5;
-  --accent-primary-hover: #6BA3FF;
-  --accent-secondary: #8F9FE8;
-  --bg-base: #E8E0EA;
-  --bg-elevated: #CCC6DE;
-  --bg-modal: #B0B6E2;
+  --accent-primary: #4488ff;
+  --accent-primary-hover: #88aaff;
+  --accent-secondary: #aabbff;
+  --bg-base: #eeeeff;
+  --bg-elevated: #ccccff;
+  --bg-modal: #aabbff;
   --bg-surface: #FFFFFF;
-  --border: rgba(0, 0, 0, 0.1);
-  --border-accent: rgba(75, 141, 245, 0.25);
+  --border: rgba(22, 32, 56, 0.1);
+  --border-accent: rgba(68, 136, 255, 0.28);
   --condition-damaged: #991B1B;
   --condition-hp: #EF4444;
   --condition-lp: #F59E0B;
@@ -22,36 +22,37 @@
   --game-onepiece: #E94560;
   --game-pokemon: #F5D623;
   --game-yugioh: #9B59B6;
-  --info: #3B82F6;
+  --info: #4488ff;
   --inquiry-closed: #9494AC;
-  --inquiry-contacted: #3B82F6;
-  --inquiry-new: #4B8DF5;
+  --inquiry-contacted: #88aaff;
+  --inquiry-new: #4488ff;
   --inquiry-sold: #22C55E;
   --inquiry-unavailable: #9494AC;
   --order-cancelled: #EF4444;
   --order-delivered: #22C55E;
   --order-pending: #F59E0B;
-  --order-processing: #3B82F6;
+  --order-processing: #4488ff;
   --order-shipped: #8B5CF6;
   --rarity-common: #9494AC;
   --rarity-holo: #A78BFA;
   --rarity-rare: #F5A623;
   --rarity-secret: #FBBF24;
   --rarity-ultra: #F472B6;
-  --rarity-uncommon: #60A5FA;
-  --shadow-level1: rgba(75, 141, 245, 0.08);
-  --shadow-level2: rgba(75, 141, 245, 0.15);
-  --shadow-level3: rgba(75, 141, 245, 0.21);
-  --shadow-level4: rgba(75, 141, 245, 0.27);
+  --rarity-uncommon: #88aaff;
+  --shadow-level1: rgba(68, 136, 255, 0.08);
+  --shadow-level2: rgba(68, 136, 255, 0.15);
+  --shadow-level3: rgba(68, 136, 255, 0.21);
+  --shadow-level4: rgba(68, 136, 255, 0.27);
   --stock-in: #22C55E;
   --stock-low: #F59E0B;
   --stock-out: #9494AC;
   --success: #22C55E;
-  --text-muted: #9494AC;
-  --text-primary: #1A1A30;
-  --text-secondary: #5A5A78;
+  --text-muted: #6b7a99;
+  --text-primary: #162038;
+  --text-secondary: #485770;
   --warning: #F59E0B;
   --whatsapp: #25D366;
+  --store-backdrop-base: #ccd6ef;
 }
 
 @theme inline {
@@ -241,6 +242,80 @@ body {
   will-change: transform;
 }
 
+.store-ambient-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    155deg,
+    #ccd6ef 0%,
+    #b7c6ea 32%,
+    #9eb4e4 68%,
+    #8aa4dc 100%
+  );
+}
+
+.store-ambient-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 90% 50% at 50% -5%,
+    rgba(68, 136, 255, 0.46) 0%,
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+.store-ambient-gradient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 85% 105%,
+    rgba(68, 136, 255, 0.32) 0%,
+    transparent 42%
+  );
+  pointer-events: none;
+}
+
+.store-ambient-card-rain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.62;
+}
+
+.store-ambient-card-rain-item {
+  position: absolute;
+  top: 0;
+  display: block;
+  border-radius: 5px;
+  border: 1px solid rgba(68, 136, 255, 0.2);
+  background-image:
+    repeating-linear-gradient(
+      118deg,
+      rgba(68, 136, 255, 0.07) 0 1px,
+      transparent 1px 6px
+    ),
+    linear-gradient(
+      168deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(170, 187, 255, 0.38) 100%
+    );
+  box-shadow:
+    0 2px 10px rgba(68, 136, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  filter: blur(var(--card-blur, 0px));
+  animation-name: coming-soon-card-rain;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  will-change: transform;
+}
+
 .coming-soon-inner {
   position: relative;
   z-index: 2;
@@ -280,6 +355,10 @@ body {
   }
 
   .coming-soon-card-rain {
+    display: none;
+  }
+
+  .store-ambient-card-rain {
     display: none;
   }
 }

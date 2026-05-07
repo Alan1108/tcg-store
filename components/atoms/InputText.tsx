@@ -20,7 +20,7 @@ export function InputText({ placeholder = '', value, onChange, name, type = 'tex
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       placeholder={placeholder}
-      className={`h-11 rounded-lg bg-[var(--bg-elevated)] border ${error ? 'border-[var(--danger)]' : 'border-[var(--border)]'} px-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none w-full ${className}`}
+      className={`h-11 rounded-lg bg-bg-elevated border ${error ? 'border-[var(--danger)]' : 'border-[var(--border)]'} px-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none w-full ${className}`}
     />
   );
 
@@ -28,7 +28,7 @@ export function InputText({ placeholder = '', value, onChange, name, type = 'tex
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[13px] font-medium text-[var(--text-primary)]">
+      <label className="text-[13px] font-medium text-text-primary">
         {label}{required && <span className="text-[var(--danger)]"> *</span>}
       </label>
       {input}

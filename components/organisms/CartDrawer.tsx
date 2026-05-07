@@ -25,20 +25,20 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-[390px]">
         <div className="bg-[var(--bg-surface)] rounded-t-2xl flex flex-col max-h-[80vh]">
           <div className="flex items-center justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-[var(--bg-elevated)]" />
+            <div className="w-10 h-1 rounded-full bg-bg-elevated" />
           </div>
 
           <div className="flex items-center justify-between px-5 py-3">
             <div className="flex items-center gap-2">
-              <span className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--text-primary)]">
+              <span className="font-heading text-xl font-bold text-text-primary">
                 Mi Carrito
               </span>
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--accent-primary)] text-[10px] font-bold text-white">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-accent-primary text-[10px] font-bold text-white">
                 {items.length}
               </span>
             </div>
-            <button onClick={onClose} className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--bg-elevated)]">
-              <X className="w-4 h-4 text-[var(--text-primary)]" />
+            <button onClick={onClose} className="flex items-center justify-center w-8 h-8 rounded-lg bg-bg-elevated">
+              <X className="w-4 h-4 text-text-primary" />
             </button>
           </div>
 
@@ -47,30 +47,30 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               const imageUrl = item.variant?.product?.thumbnail ?? item.thumbnail ?? undefined;
               return (
                 <div key={item.id} className="flex items-center gap-3 py-3 border-b border-[var(--border)]">
-                  <div className="w-16 h-16 rounded-lg bg-[var(--bg-elevated)] flex-shrink-0 relative overflow-hidden">
+                  <div className="w-16 h-16 rounded-lg bg-bg-elevated flex-shrink-0 relative overflow-hidden">
                     {imageUrl && (
                       <Image src={imageUrl} alt={item.title ?? ''} fill className="object-cover" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-semibold text-[var(--text-primary)] line-clamp-1">{item.title}</span>
-                    <span className="text-xs text-[var(--text-muted)] block">{item.variant_title}</span>
+                    <span className="text-[13px] font-semibold text-text-primary line-clamp-1">{item.title}</span>
+                    <span className="text-xs text-text-muted block">{item.variant_title}</span>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="font-[family-name:var(--font-heading)] text-base font-bold text-[var(--accent-primary)]">
+                    <span className="font-heading text-base font-bold text-accent-primary">
                       {formatPrice(item.unit_price ?? 0, currencyCode)}
                     </span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateItemQuantity(item.id, Math.max(1, (item.quantity ?? 1) - 1))}
-                        className="w-6 h-6 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"
+                        className="w-6 h-6 rounded-md bg-bg-elevated flex items-center justify-center"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
                       <button
                         onClick={() => updateItemQuantity(item.id, (item.quantity ?? 1) + 1)}
-                        className="w-6 h-6 rounded-md bg-[var(--bg-elevated)] flex items-center justify-center"
+                        className="w-6 h-6 rounded-md bg-bg-elevated flex items-center justify-center"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -86,22 +86,22 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
           <div className="px-5 pt-4 pb-6 flex flex-col gap-3 border-t border-[var(--border)]">
             <div className="flex justify-between">
-              <span className="font-semibold text-[var(--text-primary)]">Total</span>
-              <span className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--accent-primary)]">
+              <span className="font-semibold text-text-primary">Total</span>
+              <span className="font-heading text-xl font-bold text-accent-primary">
                 {formatPrice(total, currencyCode)}
               </span>
             </div>
             <Link
               href="/cart"
               onClick={onClose}
-              className="flex items-center justify-center h-10 rounded-lg bg-[var(--accent-primary)] text-sm font-semibold text-white"
+              className="flex items-center justify-center h-10 rounded-lg bg-accent-primary text-sm font-semibold text-white"
             >
               Procesar pedido
             </Link>
             <Link
               href="/"
               onClick={onClose}
-              className="flex items-center justify-center h-10 text-sm font-semibold text-[var(--text-secondary)]"
+              className="flex items-center justify-center h-10 text-sm font-semibold text-text-secondary"
             >
               Seguir comprando
             </Link>

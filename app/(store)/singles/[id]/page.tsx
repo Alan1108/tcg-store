@@ -38,15 +38,15 @@ export default async function SinglesDetailPage({ params }: Props) {
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-3 px-4 py-3">
-        <Link href="/singles"><ArrowLeft className="w-5 h-5 text-[var(--text-secondary)]" /></Link>
-        <div className="flex items-center gap-2 text-[13px] text-[var(--text-muted)]">
+        <Link href="/singles"><ArrowLeft className="w-5 h-5 text-text-secondary" /></Link>
+        <div className="flex items-center gap-2 text-[13px] text-text-muted">
           <Link href="/">Inicio</Link><span>›</span>
           <Link href="/singles">Singles</Link><span>›</span>
-          <span className="text-[var(--text-primary)]">{card.title}</span>
+          <span className="text-text-primary">{card.title}</span>
         </div>
       </div>
 
-      <div className="relative w-full h-[390px] md:h-[468px] bg-[var(--bg-elevated)]">
+      <div className="relative w-full h-[390px] md:h-[468px] bg-bg-elevated">
         {imageUrl && (
           <Image src={imageUrl} alt={card.title ?? ''} fill className="object-contain p-4" />
         )}
@@ -58,8 +58,8 @@ export default async function SinglesDetailPage({ params }: Props) {
 
       <div className="px-4 flex flex-col gap-3 py-4">
         {game && <BadgeGame game={game} />}
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[var(--text-primary)]">{card.title}</h1>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <h1 className="font-heading text-2xl font-bold text-text-primary">{card.title}</h1>
+        <p className="text-sm text-text-secondary">
           {setName} · #{setNumber}
         </p>
         <div className="flex gap-2">
@@ -67,8 +67,8 @@ export default async function SinglesDetailPage({ params }: Props) {
           <BadgeCondition condition={condition} />
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[10px] italic text-[var(--text-muted)]">ref.</span>
-          <span className="font-[family-name:var(--font-heading)] text-[32px] font-bold text-[var(--accent-primary)]">
+          <span className="text-[10px] italic text-text-muted">ref.</span>
+          <span className="font-heading text-[32px] font-bold text-accent-primary">
             {formatPrice(price, currencyCode)}
           </span>
         </div>
@@ -77,12 +77,12 @@ export default async function SinglesDetailPage({ params }: Props) {
 
       <div className="px-4 flex flex-col gap-2 py-2">
         <ButtonWhatsApp fullWidth />
-        <p className="text-xs text-center text-[var(--text-secondary)]">Contáctanos para consultar disponibilidad y precio final</p>
+        <p className="text-xs text-center text-text-secondary">Contáctanos para consultar disponibilidad y precio final</p>
       </div>
 
       <div className="flex items-center gap-3 px-4 py-4">
         <div className="flex-1 h-px bg-[var(--border)]" />
-        <span className="text-sm text-[var(--text-muted)]">o</span>
+        <span className="text-sm text-text-muted">o</span>
         <div className="flex-1 h-px bg-[var(--border)]" />
       </div>
 
@@ -90,15 +90,15 @@ export default async function SinglesDetailPage({ params }: Props) {
 
       <Divider />
       <div className="px-4 py-4">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Atributos</h2>
-        <div className="flex flex-col gap-2 text-sm text-[var(--text-secondary)]">
-          {game && <div className="flex justify-between"><span>Juego</span><span className="font-medium text-[var(--text-primary)]">{game}</span></div>}
-          {setName && <div className="flex justify-between"><span>Set</span><span className="font-medium text-[var(--text-primary)]">{setName}</span></div>}
-          {setNumber && <div className="flex justify-between"><span>Número</span><span className="font-medium text-[var(--text-primary)]">#{setNumber}</span></div>}
-          <div className="flex justify-between"><span>Rareza</span><span className="font-medium text-[var(--text-primary)]">{rarity}</span></div>
-          <div className="flex justify-between"><span>Condición</span><span className="font-medium text-[var(--text-primary)]">{condition}</span></div>
-          {language && <div className="flex justify-between"><span>Idioma</span><span className="font-medium text-[var(--text-primary)]">{language}</span></div>}
-          <div className="flex justify-between"><span>Foil</span><span className="font-medium text-[var(--text-primary)]">{isFoil ? 'Sí' : 'No'}</span></div>
+        <h2 className="text-sm font-semibold text-text-primary mb-3">Atributos</h2>
+        <div className="flex flex-col gap-2 text-sm text-text-secondary">
+          {game && <div className="flex justify-between"><span>Juego</span><span className="font-medium text-text-primary">{game}</span></div>}
+          {setName && <div className="flex justify-between"><span>Set</span><span className="font-medium text-text-primary">{setName}</span></div>}
+          {setNumber && <div className="flex justify-between"><span>Número</span><span className="font-medium text-text-primary">#{setNumber}</span></div>}
+          <div className="flex justify-between"><span>Rareza</span><span className="font-medium text-text-primary">{rarity}</span></div>
+          <div className="flex justify-between"><span>Condición</span><span className="font-medium text-text-primary">{condition}</span></div>
+          {language && <div className="flex justify-between"><span>Idioma</span><span className="font-medium text-text-primary">{language}</span></div>}
+          <div className="flex justify-between"><span>Foil</span><span className="font-medium text-text-primary">{isFoil ? 'Sí' : 'No'}</span></div>
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export default async function SinglesDetailPage({ params }: Props) {
         <>
           <Divider />
           <div className="px-4 py-6 flex flex-col gap-3">
-            <h2 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--text-primary)]">Más del catálogo</h2>
+            <h2 className="font-heading text-lg font-bold text-text-primary">Más del catálogo</h2>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {sameSet.map((c) => (
                 <div key={c.id} className="min-w-[175px]">

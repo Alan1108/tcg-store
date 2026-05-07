@@ -14,8 +14,8 @@ export function ButtonIconOnly({ icon = 'Search', onClick, className = '' }: But
   const IconComp = ((icons as unknown as Record<string, LucideIcon>)[icon] || Search);
   return (
     <button onClick={onClick}
-      className={`flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)] hover:bg-[var(--bg-modal)] transition-colors ${className}`}>
-      <IconComp className="w-[18px] h-[18px] text-[var(--text-secondary)]" />
+      className={`flex items-center justify-center w-10 h-10 rounded-lg bg-bg-elevated border border-[var(--border)] hover:bg-[var(--bg-modal)] transition-colors ${className}`}>
+      <IconComp className="w-[18px] h-[18px] text-text-secondary" />
     </button>
   );
 }
