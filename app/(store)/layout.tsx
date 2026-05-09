@@ -3,11 +3,13 @@ import { AmbientCardRain } from '@/components/molecules/AmbientCardRain';
 import { NavbarDesktop, NavbarMobile, FooterDesktop, FooterMobile, AuthModal } from '@/components/organisms';
 import { AuthProvider } from '@/providers/auth';
 import { AuthTrigger } from './auth-trigger';
+import { Analytics } from "@vercel/analytics/next";
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <div className="relative flex min-h-screen flex-col bg-[var(--store-backdrop-base)]">
+      <Analytics/>
+      <div className="relative flex min-h-screen flex-col bg-(--store-backdrop-base)">
         <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
           <div className="store-ambient-gradient absolute inset-0" />
           <AmbientCardRain variant="light" />
