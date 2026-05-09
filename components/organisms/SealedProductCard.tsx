@@ -43,6 +43,7 @@ export function SealedProductCard({ product, onAddToCart }: SealedProductCardPro
   const stock = getStockConfig(firstVariant?.inventory_quantity, firstVariant?.manage_inventory);
   const isOutOfStock = firstVariant?.manage_inventory !== false &&
     (!firstVariant?.inventory_quantity || firstVariant.inventory_quantity <= 0);
+  console.log(firstVariant, "isOutOfStock")
 
   return (
     <div className="flex flex-col rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] overflow-hidden">

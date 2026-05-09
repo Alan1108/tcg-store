@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, ShoppingCart, Menu } from 'lucide-react';
+import { Search, ShoppingCart, Menu, User } from 'lucide-react';
 import { useCart } from '@/providers/cart';
+import { useAuth } from '@/providers/auth';
 import Image from 'next/image';
 
 interface NavbarMobileProps {
@@ -11,14 +12,20 @@ interface NavbarMobileProps {
 
 export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
   const { cart } = useCart();
+  const { user, customer, openAuthModal } = useAuth();
   const cartCount = cart?.items?.reduce((n, i) => n + (i.quantity ?? 0), 0) ?? 0;
+
+  const initials = customer
+    ? `${customer.first_name?.[0] ?? ''}${customer.last_name?.[0] ?? ''}`.toUpperCase() || '?'
+    : null
+  const avatarUrl: string | undefined = user?.user_metadata?.avatar_url
 
   return (
     <nav className="flex md:hidden items-center justify-between w-full h-14 bg-bg-surface px-4 border-b border-border">
       <Link href="/" className="flex items-center gap-2">
         <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="TCG Shop" className="w-6 h-6 text-accent-primary" />
         <span className="font-heading text-lg font-bold text-text-primary">
-          TCG Shop
+          Kādo Gallery
         </span>
       </Link>
 
@@ -34,6 +41,25 @@ export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
             </span>
           )}
         </Link>
+
+        {user ? (
+          <Link
+            href="/account"
+            className="relative flex items-center justify-center w-8 h-8 rounded-full bg-accent-primary text-white text-xs font-bold overflow-hidden"
+          >
+            {avatarUrl
+              ? <Image src={avatarUrl} alt="Avatar" fill className="object-cover" sizes="32px" />
+              : initials}
+          </Link>
+        ) : (
+          <button
+            onClick={() => openAuthModal('login')}
+            className="flex items-center justify-center w-9 h-9 rounded-lg"
+          >
+            <User className="w-5 h-5 text-text-secondary" />
+          </button>
+        )}
+
         <button onClick={onMenuOpen} className="flex items-center justify-center w-9 h-9 rounded-lg">
           <Menu className="w-5 h-5 text-text-secondary" />
         </button>

@@ -1,28 +1,53 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import { Zap, Swords } from 'lucide-react';
 
 const games = [
-  { key: 'pokemon', name: 'Pokémon', color: '#F5D623', Icon: Zap },
-  { key: 'onepiece', name: 'One Piece', color: '#E94560', Icon: Swords },
+  {
+    key: 'pokemon',
+    name: 'Pokémon',
+    color: '#F5D623',
+    textColor: '#a08000',
+    logo: '/pokemon-logo.png',
+    logoAlt: 'Pokémon logo',
+  },
+  {
+    key: 'onepiece',
+    name: 'One Piece',
+    color: '#E94560',
+    textColor: '#E94560',
+    logo: '/op-logo.png',
+    logoAlt: 'One Piece logo',
+  },
 ];
 
 export function GameSystemGrid() {
   return (
     <div className="flex flex-wrap gap-4 w-full">
-      {games.map(({ key, name, color, Icon }) => (
+      {games.map(({ key, name, color, textColor, logo, logoAlt }) => (
         <Link
           key={key}
           href={`/sealed?game=${key}`}
-          className="flex-1 min-w-[200px] h-[180px] flex flex-col justify-end gap-3 p-5 rounded-xl border border-[var(--border)] overflow-hidden"
-          style={{
-            background: `linear-gradient(to bottom, ${color}80, ${color}10), var(--bg-surface)`,
-          }}
+          className="flex-1 min-w-[200px] h-[180px] relative flex flex-col justify-end gap-2 p-5 rounded-xl border bg-bg-surface overflow-hidden cursor-pointer group"
+          style={{ borderColor: `${color}60` }}
         >
-          <Icon className="w-8 h-8" style={{ color }} />
-          <span className="font-heading text-xl font-bold text-text-primary">
+          {/* Logo — multiply blend removes white background against white card */}
+          <div
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-[130px] h-[130px] transition-transform duration-300 ease-out group-hover:scale-125"
+            style={{ mixBlendMode: 'multiply' }}
+          >
+            <Image
+              src={logo}
+              alt={logoAlt}
+              fill
+              className="object-contain"
+              sizes="130px"
+            />
+          </div>
+
+          <span className="font-heading text-xl font-bold text-text-primary relative z-10">
             {name}
           </span>
-          <span className="text-[13px] font-medium" style={{ color }}>
+          <span className="text-[13px] font-semibold relative z-10" style={{ color: textColor }}>
             Ver catálogo →
           </span>
         </Link>

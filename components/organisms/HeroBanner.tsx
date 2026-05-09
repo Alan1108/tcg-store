@@ -36,7 +36,8 @@ export function HeroBanner() {
               <span className="text-sm font-bold text-white">Ver Catálogo</span>
             </Link>
             <Link
-              href="#"
+              href="https://wa.me/593982976973"
+              target='_blank'
               className="flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-whatsapp hover:opacity-90 transition-opacity cursor-pointer"
             >
               <MessageCircle className="w-[18px] h-[18px] text-white" />

@@ -37,6 +37,7 @@ export default async function SealedDetailPage({ params }: Props) {
   const price = firstVariant?.calculated_price?.calculated_amount ?? 0;
   const currencyCode = firstVariant?.calculated_price?.currency_code ?? 'USD';
   const stockStatus = getStockStatus(firstVariant?.inventory_quantity, firstVariant?.manage_inventory);
+  console.log(stockStatus)
   const imageUrl = product.thumbnail ?? product.images?.[0]?.url;
 
   return (

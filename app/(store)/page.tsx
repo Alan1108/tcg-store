@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from 'next/image';
 import { HeroBanner, GameSystemGrid, FeaturedCarousel } from '@/components/organisms';
 import { TrustBadge } from '@/components/atoms';
 import { seoConfig } from '@/lib/seo';
@@ -66,15 +67,9 @@ export default async function HomePage() {
       <div className="px-4 md:px-0 max-w-[1280px] mx-auto w-full">
         <FeaturedCarousel products={products} />
       </div>
-      <div className="flex items-center justify-around px-4 max-w-[1280px] mx-auto w-full">
-        <TrustBadge icon="ShieldCheck" label="Pago seguro" />
-        <TrustBadge icon="Truck" label="Envío nacional" />
-        <TrustBadge icon="RotateCcw" label="Devoluciones" />
-        <TrustBadge icon="Headphones" label="Soporte 24/7" />
-      </div>
-      <section className="px-4 md:px-0 max-w-[1280px] mx-auto w-full rounded-2xl overflow-hidden border border-border">
+      <section className="px-4 md:px-0 max-w-[1280px] mx-auto w-full overflow-hidden">
         {/* Header row */}
-        <div className="bg-linear-to-r from-(--accent-primary)/5 to-bg-surface border-b border-border px-6 md:px-8 py-5">
+        <div className="bg-linear-to-r from-(--accent-primary)/5 to-bg-surface border-b border-border px-6 md:px-8 py-5 rounded-t-2xl">
           <h1 className="font-heading text-2xl md:text-3xl font-bold text-text-primary">
             Tienda de cartas TCG en Ecuador:{' '}
             <span className="text-accent-primary">Pokémon y One Piece</span>
@@ -82,7 +77,7 @@ export default async function HomePage() {
         </div>
 
         {/* Two-column body */}
-        <div className="bg-bg-surface grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+        <div className="bg-bg-surface grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border rounded-b-2xl">
 
           {/* Left: Brand pitch */}
           <div className="flex flex-col gap-4 p-6 md:p-8">
@@ -117,14 +112,22 @@ export default async function HomePage() {
               buscando dónde comprar cartas Pokémon en Ecuador o cartas de One Piece con despacho confiable,
               en Kādo Gallery encontrarás opciones para empezar o mejorar tu colección.
             </p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {['DeUna', 'Tarjeta de crédito', 'Tarjeta de débito', 'Transferencia bancaria'].map((method) => (
-                <span
-                  key={method}
-                  className="px-2.5 py-1 rounded-lg bg-bg-elevated text-text-secondary text-xs font-medium border border-border"
+            <div className="flex flex-wrap justify-center gap-3 pt-1">
+              {[
+                { src: '/Deuna!_icono.png', label: 'DeUna', title: 'DeUna' },
+                { src: '/tarjeta-de-debito.png', label: 'Tarjetas', title: 'Tarjeta de crédito y débito' },
+                { src: '/banco.png', label: 'Transferencia', title: 'Transferencia bancaria' },
+              ].map(({ src, label, title }) => (
+                <div
+                  key={label}
+                  title={title}
+                  className="flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-bg-elevated border border-border min-w-[72px]"
                 >
-                  {method}
-                </span>
+                  <div className="relative w-8 h-8">
+                    <Image src={src} alt={label} fill className="object-contain" sizes="32px" />
+                  </div>
+                  <span className="text-[11px] font-medium text-text-secondary leading-none">{label}</span>
+                </div>
               ))}
             </div>
           </div>
