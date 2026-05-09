@@ -3,6 +3,7 @@ import "./globals.css";
 import { seoConfig } from "@/lib/seo";
 import { RegionProvider } from "@/providers/region";
 import { CartProvider } from "@/providers/cart";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL(seoConfig.siteUrl),
@@ -72,6 +73,7 @@ export default function RootLayout({
             {children}
           </CartProvider>
         </RegionProvider>
+        <Analytics />
       </body>
     </html>
   );
