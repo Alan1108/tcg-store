@@ -11,7 +11,7 @@ import { BadgeOrderStatus } from '@/components/atoms'
 import { formatPrice } from '@/lib/format'
 import type { Order, OrderStatus } from '@/types'
 
-type Tab = 'profile' | 'orders' | 'inquiries'
+type Tab = 'profile' | 'orders'
 
 // ─── Reusable field helpers ───────────────────────────────────────────────────
 
@@ -336,7 +336,6 @@ function OrdersTab() {
 const TABS: { id: Tab; label: string }[] = [
   { id: 'profile', label: 'Perfil' },
   { id: 'orders', label: 'Mis Pedidos' },
-  { id: 'inquiries', label: 'Mis Consultas' },
 ]
 
 export default function AccountPage() {
@@ -439,12 +438,6 @@ export default function AccountPage() {
       <div className="max-w-[1280px] mx-auto w-full px-4 pt-6 flex flex-col items-center">
         {tab === 'profile' && <ProfileTab onRefresh={refreshCustomer} />}
         {tab === 'orders' && <OrdersTab />}
-        {tab === 'inquiries' && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center w-full">
-            <p className="text-sm font-medium text-text-primary">Sin consultas aún</p>
-            <p className="text-xs text-text-muted">Tus consultas sobre singles aparecerán aquí.</p>
-          </div>
-        )}
       </div>
     </div>
   )

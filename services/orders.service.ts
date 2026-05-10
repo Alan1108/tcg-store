@@ -26,11 +26,39 @@ export async function getCustomerOrders(
 
 export async function getOrderById(id: string): Promise<Order | null> {
   const headers = await authHeaders()
-  const { order } = await sdk.store.order.retrieve(id, {}, headers)
+  const { order } = await sdk.store.order.retrieve(
+    id,
+    { fields: '+items.*,+items.variant.*,+items.variant.product.*,+billing_address,+shipping_address,+shipping_methods.*' },
+    headers
+  )
   return (order as Order) ?? null
 }
 
-export async function completeCart(cartId: string): Promise<HttpTypes.StoreOrder | null> {
-  const result = await sdk.store.cart.complete(cartId)
+export async function completeCart(
+  cartId: string,
+  billingAddress?: HttpTypes.StoreAddAddress
+): Promise<HttpTypes.StoreOrder | null> {
+  const headers = await authHeaders()
+
+  // Link the authenticated customer to the cart (sets customer_id on the order)
+  if (Object.keys(headers).length > 0) {
+    await sdk.store.cart.transferCart(cartId, {}, headers)
+  }
+
+  // Set billing address
+  if (billingAddress) {
+    await sdk.store.cart.update(cartId, { billing_address: billingAddress }, {}, headers)
+  }
+
+  // Medusa v2 requires a payment collection + session before completing the cart
+  const { cart } = await sdk.store.cart.retrieve(cartId, {
+    fields: '+payment_collection',
+  })
+
+  await sdk.store.payment.initiatePaymentSession(cart, {
+    provider_id: 'pp_system_default',
+  })
+
+  const result = await sdk.store.cart.complete(cartId, {}, headers)
   return (result as { order?: HttpTypes.StoreOrder }).order ?? null
 }

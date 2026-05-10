@@ -35,6 +35,16 @@ type ShippingOption = {
 
 type PaymentMethod = 'deuna' | 'transfer' | 'card' | null
 
+interface BillingAddress {
+  first_name: string
+  last_name: string
+  address_1: string
+  city: string
+  province: string
+  postal_code: string
+  phone: string
+}
+
 // ─── Payment modal ─────────────────────────────────────────────────────────────
 function PaymentModal({
   method,
@@ -164,32 +174,34 @@ export default function CheckoutPage() {
 
   const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('delivery')
   const [selectedAddressId, setSelectedAddressId] = useState<string>(MOCK_ADDRESSES[0].id)
-  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([])
+  // null = fetch in progress, [] = no options, [...] = options loaded
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[] | null>(null)
   const [selectedShippingId, setSelectedShippingId] = useState<string | null>(null)
-  const [loadingShipping, setLoadingShipping] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [billing, setBilling] = useState<BillingAddress>({
+    first_name: '', last_name: '', address_1: '', city: '',
+    province: '', postal_code: '', phone: '',
+  })
 
-  // Fetch Medusa shipping options when delivery is selected
+  const cartId = cart?.id
+
+  // Fetch Medusa shipping options when delivery is selected.
+  // All setState calls are inside async callbacks to satisfy react-hooks/set-state-in-effect.
   useEffect(() => {
-    if (!cart?.id || fulfillmentType !== 'delivery') {
-      setShippingOptions([])
-      setSelectedShippingId(null)
-      return
-    }
-    setLoadingShipping(true)
+    if (!cartId || fulfillmentType !== 'delivery') return
     sdk.store.fulfillment
-      .listCartOptions({ cart_id: cart.id })
+      .listCartOptions({ cart_id: cartId })
       .then(({ shipping_options }) => {
         const opts = shipping_options as ShippingOption[]
         setShippingOptions(opts)
         if (opts.length > 0) setSelectedShippingId(opts[0].id)
       })
-      .catch(() => {})
-      .finally(() => setLoadingShipping(false))
-  }, [cart?.id, fulfillmentType])
+      .catch(() => setShippingOptions([]))
+    return () => setShippingOptions(null) // reset to loading for next fetch cycle
+  }, [cartId, fulfillmentType])
 
-  const selectedShipping = shippingOptions.find((o) => o.id === selectedShippingId)
+  const selectedShipping = shippingOptions?.find((o) => o.id === selectedShippingId)
   const shippingCost = fulfillmentType === 'delivery' ? (selectedShipping?.amount ?? 0) : 0
   const total = subtotal + shippingCost
 
@@ -200,7 +212,17 @@ export default function CheckoutPage() {
       if (fulfillmentType === 'delivery' && selectedShippingId) {
         await sdk.store.cart.addShippingMethod(cart.id, { option_id: selectedShippingId })
       }
-      const order = await completeCart(cart.id)
+      const billingAddress = {
+        first_name: billing.first_name || undefined,
+        last_name: billing.last_name || undefined,
+        address_1: billing.address_1 || undefined,
+        city: billing.city || undefined,
+        province: billing.province || undefined,
+        postal_code: billing.postal_code || undefined,
+        phone: billing.phone || undefined,
+        country_code: 'ec',
+      }
+      const order = await completeCart(cart.id, billingAddress)
       if (order) {
         unsetCart()
         router.push(`/order-confirmation?id=${order.id}`)
@@ -307,7 +329,7 @@ export default function CheckoutPage() {
               {/* Shipping options */}
               {fulfillmentType === 'delivery' && (
                 <div className="flex flex-col gap-2">
-                  {loadingShipping ? (
+                  {shippingOptions === null ? (
                     <p className="text-sm text-text-muted py-2 text-center">Cargando opciones de envío…</p>
                   ) : shippingOptions.length === 0 ? (
                     <p className="text-sm text-text-muted py-2 text-center">No hay opciones de envío disponibles.</p>
@@ -376,6 +398,57 @@ export default function CheckoutPage() {
                 </button>
               </div>
             )}
+            {/* Billing address */}
+            <div className="bg-bg-surface rounded-2xl border border-border p-5 flex flex-col gap-4">
+              <h2 className="font-heading text-base font-bold text-text-primary">Dirección de facturación</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { key: 'first_name', label: 'Nombre', placeholder: 'Juan' },
+                  { key: 'last_name',  label: 'Apellido', placeholder: 'Pérez' },
+                ] as const).map(({ key, label, placeholder }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-text-secondary">{label}</label>
+                    <input
+                      type="text"
+                      placeholder={placeholder}
+                      value={billing[key]}
+                      onChange={(e) => setBilling((b) => ({ ...b, [key]: e.target.value }))}
+                      className="h-10 rounded-xl border border-border bg-bg-elevated px-3 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-accent-primary transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-text-secondary">Dirección</label>
+                <input
+                  type="text"
+                  placeholder="Av. República E3-71 y Diego de Almagro"
+                  value={billing.address_1}
+                  onChange={(e) => setBilling((b) => ({ ...b, address_1: e.target.value }))}
+                  className="h-10 rounded-xl border border-border bg-bg-elevated px-3 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-accent-primary transition-colors"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { key: 'city',        label: 'Ciudad',         placeholder: 'Quito' },
+                  { key: 'province',    label: 'Provincia',      placeholder: 'Pichincha' },
+                  { key: 'postal_code', label: 'Código postal',  placeholder: '170150' },
+                  { key: 'phone',       label: 'Teléfono',       placeholder: '+593 99 000 0000' },
+                ] as const).map(({ key, label, placeholder }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-text-secondary">{label}</label>
+                    <input
+                      type="text"
+                      placeholder={placeholder}
+                      value={billing[key]}
+                      onChange={(e) => setBilling((b) => ({ ...b, [key]: e.target.value }))}
+                      className="h-10 rounded-xl border border-border bg-bg-elevated px-3 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-accent-primary transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
 
           {/* ── Right column ──────────────────────────────────── */}
