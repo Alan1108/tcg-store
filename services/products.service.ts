@@ -7,6 +7,7 @@ export interface ProductFilters {
   page?: number
   limit?: number
   regionId?: string
+  tagValue?: string
 }
 
 export interface PaginatedResponse<T> {
@@ -23,23 +24,37 @@ const PRODUCT_FIELDS =
 export async function getSealedProducts(
   filters: ProductFilters = {}
 ): Promise<PaginatedResponse<HttpTypes.StoreProduct>> {
-  const { page = 1, limit = 20, search, regionId } = filters
-  const offset = (page - 1) * limit
+  const { page = 1, limit = 20, search, regionId, tagValue } = filters
+
+  // When filtering by tag we fetch a large batch and filter in-memory,
+  // because the store API only supports tag_id[] (not tag value).
+  const fetchLimit = tagValue ? 200 : limit
+  const offset = tagValue ? 0 : (page - 1) * limit
 
   const { products, count } = await sdk.store.product.list({
     q: search,
-    limit,
+    limit: fetchLimit,
     offset,
     fields: PRODUCT_FIELDS,
     ...(regionId && { region_id: regionId }),
   } as Parameters<typeof sdk.store.product.list>[0])
 
-  const sealed = products.filter((p) => p.type?.value === "sealed")
+  let sealed = products.filter((p) => p.type?.value === "sealed")
+
+  if (tagValue) {
+    sealed = sealed.filter((p) =>
+      p.tags?.some((t) => t.value === tagValue)
+    )
+  }
+
+  const total = tagValue ? sealed.length : (count ?? sealed.length)
+  const paginated = tagValue ? sealed.slice((page - 1) * limit, page * limit) : sealed
+
   return {
-    data: sealed,
-    total: count ?? sealed.length,
+    data: paginated,
+    total,
     page,
-    totalPages: Math.ceil((count ?? sealed.length) / limit),
+    totalPages: Math.ceil(total / limit),
   }
 }
 
