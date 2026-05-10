@@ -79,13 +79,17 @@ function ProfileTab({ onRefresh }: { onRefresh: () => Promise<void> }) {
   const [lastName, setLastName] = useState(customer?.last_name ?? meta.last_name ?? '')
   const [phone, setPhone] = useState(customer?.phone ?? '')
 
-  // Populate fields once customer/user data arrives after initial render
-  useEffect(() => {
+  // Sync form fields when customer/user data arrives — done during render to avoid
+  // the set-state-in-effect rule and prevent a double-render cycle.
+  const [prevCustomer, setPrevCustomer] = useState(customer)
+  const [prevUser, setPrevUser] = useState(user)
+  if (prevCustomer !== customer || prevUser !== user) {
+    setPrevCustomer(customer)
+    setPrevUser(user)
     setFirstName(customer?.first_name ?? meta.first_name ?? '')
     setLastName(customer?.last_name ?? meta.last_name ?? '')
     setPhone(customer?.phone ?? meta.phone ?? '')
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customer, user])
+  }
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<{ ok?: string; err?: string }>({})
 
@@ -357,7 +361,12 @@ function AddressesTab() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  // Initial fetch — all setState calls are in async callbacks to satisfy react-hooks/set-state-in-effect
+  useEffect(() => {
+    getCustomerAddresses()
+      .then(setAddresses)
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
