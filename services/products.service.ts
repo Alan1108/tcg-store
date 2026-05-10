@@ -115,6 +115,20 @@ export async function getFeaturedProducts(
   return products.filter((p) => p.type?.value === "sealed")
 }
 
+export async function getProductsByIds(
+  ids: string[],
+  regionId?: string
+): Promise<HttpTypes.StoreProduct[]> {
+  if (ids.length === 0) return []
+  const { products } = await sdk.store.product.list({
+    id: ids,
+    fields: PRODUCT_FIELDS,
+    limit: ids.length,
+    ...(regionId && { region_id: regionId }),
+  } as Parameters<typeof sdk.store.product.list>[0])
+  return products
+}
+
 export async function searchProducts(
   query: string,
   regionId?: string

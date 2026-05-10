@@ -4,13 +4,16 @@ import Link from 'next/link';
 import { Search, Heart, ShoppingCart, User, LogOut } from 'lucide-react';
 import { useCart } from '@/providers/cart';
 import { useAuth } from '@/providers/auth';
+import { useWishlist } from '@/providers/wishlist';
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 
 export function NavbarDesktop() {
   const { cart } = useCart();
   const { user, customer, openAuthModal, signOut } = useAuth();
+  const { items: wishlistItems } = useWishlist();
   const cartCount = cart?.items?.reduce((n, i) => n + (i.quantity ?? 0), 0) ?? 0;
+  const wishlistCount = wishlistItems.length;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -55,9 +58,18 @@ export function NavbarDesktop() {
           Singles
         </Link>
         <div className="w-px h-6 bg-border" />
-        <button className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-bg-elevated transition-colors">
-          <Heart className="w-5 h-5 text-text-secondary" />
-        </button>
+        <Link href="/wishlist" className="relative flex items-center justify-center w-9 h-9 rounded-lg hover:bg-bg-elevated transition-colors">
+          <Heart
+            className="w-5 h-5 transition-colors"
+            fill={wishlistCount > 0 ? '#f87171' : 'none'}
+            color={wishlistCount > 0 ? '#f87171' : 'currentColor'}
+          />
+          {wishlistCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-[18px] h-[18px] rounded-full bg-accent-primary text-white text-[10px] font-bold">
+              {wishlistCount}
+            </span>
+          )}
+        </Link>
         <Link href="/cart" className="relative flex items-center justify-center w-9 h-9 rounded-lg hover:bg-bg-elevated transition-colors">
           <ShoppingCart className="w-5 h-5 text-text-secondary" />
           {cartCount > 0 && (

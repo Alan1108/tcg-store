@@ -5,6 +5,7 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import type { HttpTypes } from '@medusajs/types';
 import type { GameSystem } from '@/types';
 import { formatPrice } from '@/lib/format';
+import { useWishlist } from '@/providers/wishlist';
 
 interface SealedProductCardProps {
   product: HttpTypes.StoreProduct;
@@ -43,7 +44,21 @@ export function SealedProductCard({ product, onAddToCart }: SealedProductCardPro
   const stock = getStockConfig(firstVariant?.inventory_quantity, firstVariant?.manage_inventory);
   const isOutOfStock = firstVariant?.manage_inventory !== false &&
     (!firstVariant?.inventory_quantity || firstVariant.inventory_quantity <= 0);
-  console.log(firstVariant, "isOutOfStock")
+
+  const { addItem, removeItem, isInWishlist } = useWishlist();
+  const wishlisted = product.id && firstVariant?.id
+    ? isInWishlist(product.id, firstVariant.id)
+    : false;
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!product.id || !firstVariant?.id) return;
+    if (wishlisted) {
+      removeItem(product.id, firstVariant.id);
+    } else {
+      addItem(product.id, firstVariant.id);
+    }
+  };
 
   return (
     <div className="flex flex-col rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] overflow-hidden">
@@ -59,8 +74,15 @@ export function SealedProductCard({ product, onAddToCart }: SealedProductCardPro
             {gameLabels[game] ?? game}
           </span>
         )}
-        <button className="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40">
-          <Heart className="w-3.5 h-3.5 text-white" />
+        <button
+          onClick={handleWishlistToggle}
+          className="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-full bg-black/40"
+        >
+          <Heart
+            className="w-3.5 h-3.5"
+            fill={wishlisted ? '#f87171' : 'none'}
+            color={wishlisted ? '#f87171' : 'white'}
+          />
         </button>
       </div>
       <div className="flex flex-col gap-2 p-3">

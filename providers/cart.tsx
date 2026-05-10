@@ -21,8 +21,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const { region } = useRegion()
 
   useEffect(() => {
-    if (!region) return
-    if (cart) {
+    if (!region?.id) return
+    if (cart?.id) {
       localStorage.setItem("cart_id", cart.id)
       return
     }
@@ -34,15 +34,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       })
       .then(({ cart: dataCart }) => setCart(dataCart))
       .catch(() => localStorage.removeItem("cart_id"))
-  }, [cart, region])
+  }, [cart?.id, region?.id])
 
   useEffect(() => {
-    if (!cart || !region || cart.region_id === region.id) return
+    if (!cart?.id || !region?.id || cart.region_id === region.id) return
     sdk.store.cart
       .update(cart.id, { region_id: region.id })
       .then(({ cart: dataCart }) => setCart(dataCart))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region])
+      .catch(() => {})
+  }, [region?.id, cart?.id])
 
   const refreshCart = async () => {
     if (!region) return

@@ -75,13 +75,6 @@ export default async function SealedDetailPage({ params }: Props) {
         <Link href="/sealed"><ButtonGhost label="Seguir comprando" fullWidth /></Link>
       </div>
 
-      <div className="flex items-center justify-around px-4 py-4 max-w-[1280px] mx-auto w-full">
-        <TrustBadge icon="ShieldCheck" label="Pago seguro" />
-        <TrustBadge icon="Truck" label="Envío nacional" />
-        <TrustBadge icon="RotateCcw" label="Devoluciones" />
-        <TrustBadge icon="Headphones" label="Soporte 24/7" />
-      </div>
-
       {product.description && (
         <>
           <Divider />

@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, ShoppingCart, Menu, User } from 'lucide-react';
+import { Search, ShoppingCart, Menu, User, Heart } from 'lucide-react';
 import { useCart } from '@/providers/cart';
 import { useAuth } from '@/providers/auth';
+import { useWishlist } from '@/providers/wishlist';
 import Image from 'next/image';
 
 interface NavbarMobileProps {
@@ -13,7 +14,9 @@ interface NavbarMobileProps {
 export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
   const { cart } = useCart();
   const { user, customer, openAuthModal } = useAuth();
+  const { items: wishlistItems } = useWishlist();
   const cartCount = cart?.items?.reduce((n, i) => n + (i.quantity ?? 0), 0) ?? 0;
+  const wishlistCount = wishlistItems.length;
 
   const initials = customer
     ? `${customer.first_name?.[0] ?? ''}${customer.last_name?.[0] ?? ''}`.toUpperCase() || '?'
@@ -33,6 +36,18 @@ export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
         <button className="flex items-center justify-center w-9 h-9 rounded-lg">
           <Search className="w-5 h-5 text-text-secondary" />
         </button>
+        <Link href="/wishlist" className="relative flex items-center justify-center w-9 h-9 rounded-lg">
+          <Heart
+            className="w-5 h-5 transition-colors"
+            fill={wishlistCount > 0 ? '#f87171' : 'none'}
+            color={wishlistCount > 0 ? '#f87171' : 'currentColor'}
+          />
+          {wishlistCount > 0 && (
+            <span className="absolute top-0 right-0 flex items-center justify-center w-[18px] h-[18px] rounded-full bg-accent-primary text-white text-[10px] font-bold">
+              {wishlistCount}
+            </span>
+          )}
+        </Link>
         <Link href="/cart" className="relative flex items-center justify-center w-9 h-9 rounded-lg">
           <ShoppingCart className="w-5 h-5 text-text-secondary" />
           {cartCount > 0 && (

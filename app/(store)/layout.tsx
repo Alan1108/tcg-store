@@ -2,12 +2,14 @@ import { Suspense } from 'react';
 import { AmbientCardRain } from '@/components/molecules/AmbientCardRain';
 import { NavbarDesktop, NavbarMobile, FooterDesktop, FooterMobile, AuthModal } from '@/components/organisms';
 import { AuthProvider } from '@/providers/auth';
+import { WishlistProvider } from '@/providers/wishlist';
 import { AuthTrigger } from './auth-trigger';
 import { Analytics } from "@vercel/analytics/next";
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
+      <WishlistProvider>
       <Analytics/>
       <div className="relative flex min-h-screen flex-col bg-(--store-backdrop-base)">
         <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
@@ -24,6 +26,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         <AuthModal />
         <Suspense><AuthTrigger /></Suspense>
       </div>
+      </WishlistProvider>
     </AuthProvider>
   );
 }

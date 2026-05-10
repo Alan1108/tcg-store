@@ -11,7 +11,7 @@ export default function CartPage() {
   const { cart, updateItemQuantity, removeItem } = useCart();
   const items = cart?.items ?? [];
   const currencyCode = cart?.currency_code ?? 'USD';
-  const subtotal = cart?.subtotal ?? 0;
+  const total = cart?.total ?? 0;
 
   if (items.length === 0) {
     return (
@@ -76,33 +76,15 @@ export default function CartPage() {
         })}
       </div>
 
-      <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-4 flex flex-col gap-3 mt-4">
-        <div className="flex justify-between text-sm">
-          <span className="text-text-secondary">Subtotal</span>
-          <span className="text-text-primary">{formatPrice(subtotal, currencyCode)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-text-secondary">Envío estándar</span>
-          <span className="text-[var(--success)] font-medium">Gratis</span>
-        </div>
-        <Divider />
-        <div className="flex justify-between">
-          <span className="font-semibold text-text-primary">Total</span>
-          <span className="font-heading text-xl font-bold text-accent-primary">
-            {formatPrice(cart?.total ?? 0, currencyCode)}
-          </span>
-        </div>
+      <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-4 flex items-center justify-between mt-4">
+        <span className="font-semibold text-text-primary">Total</span>
+        <span className="font-heading text-xl font-bold text-accent-primary">
+          {formatPrice(total, currencyCode)}
+        </span>
       </div>
 
-      <ButtonPrimary label="Procesar pedido" fullWidth />
+      <Link href="/checkout"><ButtonPrimary label="Proceder al checkout" fullWidth /></Link>
       <Link href="/"><ButtonGhost label="Seguir comprando" fullWidth /></Link>
-
-      <div className="flex items-center justify-around">
-        <TrustBadge icon="ShieldCheck" label="Pago seguro" />
-        <TrustBadge icon="Truck" label="Envío nacional" />
-        <TrustBadge icon="RotateCcw" label="Devoluciones" />
-        <TrustBadge icon="Headphones" label="Soporte 24/7" />
-      </div>
     </div>
   );
 }

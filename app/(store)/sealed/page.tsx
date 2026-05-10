@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { SealedProductCard } from '@/components/organisms';
@@ -25,7 +25,7 @@ const gameLabels: Record<string, string> = {
   lorcana: 'Lorcana',
 };
 
-export default function SealedCatalogPage() {
+function SealedCatalogContent() {
   const searchParams = useSearchParams();
   const game = searchParams.get('game') ?? '';
 
@@ -112,5 +112,13 @@ export default function SealedCatalogPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SealedCatalogPage() {
+  return (
+    <Suspense>
+      <SealedCatalogContent />
+    </Suspense>
   );
 }
