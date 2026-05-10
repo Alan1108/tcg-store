@@ -18,7 +18,7 @@ export async function getCustomerOrders(
   const offset = (page - 1) * limit
   const headers = await authHeaders()
   const { orders, count } = await sdk.store.order.list(
-    { limit, offset, fields: '+items.*,+items.variant.*,+items.variant.product.*' },
+    { limit, offset, fields: '+items.*,+items.variant.*,+items.variant.product.*,+payment_status,+fulfillment_status', order: '-created_at' } as Parameters<typeof sdk.store.order.list>[0],
     headers
   )
   return { data: orders as Order[], count: count ?? orders.length }
@@ -36,7 +36,8 @@ export async function getOrderById(id: string): Promise<Order | null> {
 
 export async function completeCart(
   cartId: string,
-  billingAddress?: HttpTypes.StoreAddAddress
+  billingAddress?: HttpTypes.StoreAddAddress,
+  shippingAddress?: HttpTypes.StoreAddAddress
 ): Promise<HttpTypes.StoreOrder | null> {
   const headers = await authHeaders()
 
@@ -45,9 +46,13 @@ export async function completeCart(
     await sdk.store.cart.transferCart(cartId, {}, headers)
   }
 
-  // Set billing address
-  if (billingAddress) {
-    await sdk.store.cart.update(cartId, { billing_address: billingAddress }, {}, headers)
+  // Set billing and/or shipping address in one call
+  const addressUpdate: HttpTypes.StoreUpdateCart = {
+    ...(billingAddress && { billing_address: billingAddress }),
+    ...(shippingAddress && { shipping_address: shippingAddress }),
+  }
+  if (Object.keys(addressUpdate).length > 0) {
+    await sdk.store.cart.update(cartId, addressUpdate, {}, headers)
   }
 
   // Medusa v2 requires a payment collection + session before completing the cart

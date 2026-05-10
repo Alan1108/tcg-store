@@ -1,7 +1,8 @@
+export const revalidate = 3600 // revalidate home page every hour
+
 import type { Metadata } from "next";
 import Image from 'next/image';
 import { HeroBanner, GameSystemGrid, FeaturedCarousel } from '@/components/organisms';
-import { TrustBadge } from '@/components/atoms';
 import { seoConfig } from '@/lib/seo';
 import { getFeaturedProducts } from '@/services/products.service';
 

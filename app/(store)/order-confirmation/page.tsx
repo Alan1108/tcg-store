@@ -22,14 +22,12 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
   const subtotal = order.subtotal ?? 0;
   const shippingTotal = order.shipping_total ?? 0;
   const total = order.total ?? 0;
-  const billing = order.billing_address;
-  const shipping = order.shipping_address ?? billing;
+  const shipping = order.shipping_address;
 
-  const addressLine = [
-    shipping?.address_1,
-    shipping?.city,
-    shipping?.province,
-  ].filter(Boolean).join(', ');
+  const shippingMethodName = (order.shipping_methods as unknown as Array<{ name?: string }>)?.[0]?.name ?? '';
+  const isPickup = /pick.?up|retiro/i.test(shippingMethodName);
+
+  const addressLine = [shipping?.address_1, shipping?.city, shipping?.province].filter(Boolean).join(', ');
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8 flex flex-col gap-6">
@@ -93,8 +91,25 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Shipping / billing address */}
-      {addressLine && (
+      {/* Pickup info or shipping address */}
+      {isPickup ? (
+        <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-4 flex flex-col gap-3">
+          <h2 className="text-sm font-bold text-text-primary">Retiro en tienda</h2>
+          <div className="flex items-start gap-2 text-sm text-text-secondary">
+            <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-text-muted" />
+            <div className="flex flex-col gap-0.5">
+              <span className="font-medium text-text-primary">Kādo Gallery — Casa Elian</span>
+              <span>Abdón Calderón y Ponce Enríquez, Urbanización los Olivos Lote 31</span>
+              <span>Quito, Pichincha</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1 text-xs text-text-muted pl-6">
+            <span>Lun – Vie: 10:00 – 19:00</span>
+            <span>Sáb: 10:00 – 17:00</span>
+            <span className="text-text-secondary mt-1">Te avisaremos cuando tu pedido esté listo para retirar.</span>
+          </div>
+        </div>
+      ) : addressLine ? (
         <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-4 flex flex-col gap-2">
           <h2 className="text-sm font-bold text-text-primary">Información de Envío</h2>
           <div className="flex items-start gap-2 text-sm text-text-secondary">
@@ -102,7 +117,7 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
             <div className="flex flex-col gap-0.5">
               {(shipping?.first_name || shipping?.last_name) && (
                 <span className="font-medium text-text-primary">
-                  {[shipping.first_name, shipping.last_name].filter(Boolean).join(' ')}
+                  {[shipping?.first_name, shipping?.last_name].filter(Boolean).join(' ')}
                 </span>
               )}
               <span>{addressLine}</span>
@@ -110,7 +125,7 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       <Link
         href="/account"

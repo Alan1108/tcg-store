@@ -27,9 +27,9 @@ export function FooterMobile() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
-            <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="TCG Shop" className="w-6 h-6 text-accent-primary" />
+            <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="Kado Gallery" className="w-6 h-6 text-accent-primary" />
             <span className="font-heading text-xl font-bold text-text-primary">
-              TCG Shop
+              Kādo Gallery
             </span>
           </div>
           <p className="text-xs text-center text-text-primary">
@@ -65,7 +65,7 @@ export function FooterMobile() {
 
         <div className="h-px bg-border" />
         <p className="text-[11px] text-center text-text-muted">
-          © 2026 TCG Shop. Todos los derechos reservados.
+          © 2026 Kādo Gallery. Todos los derechos reservados.
         </p>
       </div>
     </footer>

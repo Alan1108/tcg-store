@@ -2,16 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { Camera, Eye, EyeOff, Loader2, LogOut, Package, User } from 'lucide-react'
+import { Camera, Eye, EyeOff, Loader2, LogOut, MapPin, Package, Plus, Trash2, User, X } from 'lucide-react'
 import { useAuth } from '@/providers/auth'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
-import { updateCustomerProfile } from '@/services/customers.service'
+import { updateCustomerProfile, getCustomerAddresses, createCustomerAddress, deleteCustomerAddress } from '@/services/customers.service'
 import { getCustomerOrders } from '@/services/orders.service'
 import { BadgeOrderStatus } from '@/components/atoms'
 import { formatPrice } from '@/lib/format'
 import type { Order, OrderStatus } from '@/types'
+import type { HttpTypes } from '@medusajs/types'
 
-type Tab = 'profile' | 'orders'
+type Tab = 'profile' | 'orders' | 'addresses'
 
 // ─── Reusable field helpers ───────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ function Field({
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-[13px] font-medium text-text-primary">
-        {label}{required && <span className="text-[var(--danger)]"> *</span>}
+        {label}{required && <span className="text-danger"> *</span>}
       </label>
       <input
         type={type} value={value} placeholder={placeholder} required={required}
@@ -62,7 +63,7 @@ function PasswordField({
 
 function Feedback({ success, error }: { success?: string; error?: string }) {
   if (success) return <p className="text-xs text-green-600">{success}</p>
-  if (error) return <p className="text-xs text-[var(--danger)]">{error}</p>
+  if (error) return <p className="text-xs text-danger">{error}</p>
   return null
 }
 
@@ -225,15 +226,19 @@ function ProfileTab({ onRefresh }: { onRefresh: () => Promise<void> }) {
 
 // ─── Orders Tab ───────────────────────────────────────────────────────────────
 
-const ORDER_STATUS_MAP: Record<string, OrderStatus> = {
-  pending: 'pending',
-  requires_action: 'pending',
-  completed: 'delivered',
-  canceled: 'cancelled',
+function deriveOrderStatus(order: Order): OrderStatus {
+  if (order.status === 'canceled') return 'cancelled'
+  const fs = order.fulfillment_status as string | undefined
+  if (fs === 'delivered' || fs === 'partially_delivered') return 'delivered'
+  if (fs === 'shipped' || fs === 'partially_shipped') return 'shipped'
+  if (fs === 'fulfilled' || fs === 'partially_fulfilled') return 'processing'
+  const ps = order.payment_status as string | undefined
+  if (ps === 'captured' || ps === 'partially_captured') return 'processing'
+  return 'pending'
 }
 
 function OrderCard({ order }: { order: Order }) {
-  const status = ORDER_STATUS_MAP[order.status as string] ?? 'pending'
+  const status = deriveOrderStatus(order)
   const date = new Date(order.created_at).toLocaleDateString('es-EC', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
@@ -331,11 +336,173 @@ function OrdersTab() {
   )
 }
 
+// ─── Addresses Tab ────────────────────────────────────────────────────────────
+
+const EMPTY_ADDR: HttpTypes.StoreCreateCustomerAddress = {
+  first_name: '', last_name: '', address_1: '', city: '',
+  province: '', postal_code: '', phone: '', country_code: 'ec',
+}
+
+function AddressesTab() {
+  const [addresses, setAddresses] = useState<HttpTypes.StoreCustomerAddress[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState<HttpTypes.StoreCreateCustomerAddress>(EMPTY_ADDR)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const load = async () => {
+    setLoading(true)
+    setAddresses(await getCustomerAddresses())
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    const result = await createCustomerAddress(form)
+    if (result.error) {
+      setError(result.error)
+    } else {
+      setForm(EMPTY_ADDR)
+      setShowForm(false)
+      await load()
+    }
+    setSaving(false)
+  }
+
+  const handleDelete = async (id: string) => {
+    await deleteCustomerAddress(id)
+    setAddresses((prev) => prev.filter((a) => a.id !== id))
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-3 max-w-2xl w-full">
+        {[1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-bg-elevated animate-pulse" />)}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-4 max-w-2xl w-full">
+      {/* Address list */}
+      {addresses.length === 0 && !showForm && (
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-bg-elevated">
+            <MapPin className="w-6 h-6 text-text-muted" />
+          </div>
+          <p className="text-sm font-medium text-text-primary">Sin direcciones guardadas</p>
+          <p className="text-xs text-text-muted max-w-xs">Agrega una dirección para agilizar tus próximas compras.</p>
+        </div>
+      )}
+
+      {addresses.map((addr) => {
+        const line = [addr.address_1, addr.city, addr.province].filter(Boolean).join(', ')
+        const name = [addr.first_name, addr.last_name].filter(Boolean).join(' ')
+        return (
+          <div key={addr.id} className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4 flex items-start gap-3">
+            <MapPin className="w-4 h-4 text-text-muted shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              {name && <p className="text-sm font-semibold text-text-primary">{name}</p>}
+              <p className="text-sm text-text-secondary">{line}</p>
+              {addr.phone && <p className="text-xs text-text-muted mt-0.5">{addr.phone}</p>}
+            </div>
+            <button
+              onClick={() => handleDelete(addr.id)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-bg-elevated transition-colors shrink-0"
+            >
+              <Trash2 className="w-4 h-4 text-[var(--danger)]" />
+            </button>
+          </div>
+        )
+      })}
+
+      {/* Add address form */}
+      {showForm ? (
+        <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-text-primary">Nueva dirección</h3>
+            <button onClick={() => { setShowForm(false); setError('') }}>
+              <X className="w-4 h-4 text-text-muted" />
+            </button>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { key: 'first_name', label: 'Nombre',   placeholder: 'Juan' },
+                { key: 'last_name',  label: 'Apellido', placeholder: 'Pérez' },
+              ] as const).map(({ key, label, placeholder }) => (
+                <div key={key} className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-text-secondary">{label}</label>
+                  <input
+                    type="text" placeholder={placeholder}
+                    value={form[key] ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                    className="h-10 rounded-xl border border-[var(--border)] bg-bg-elevated px-3 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-accent-primary transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-text-secondary">Dirección</label>
+              <input
+                type="text" placeholder="Av. República E3-71 y Diego de Almagro" required
+                value={form.address_1 ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, address_1: e.target.value }))}
+                className="h-10 rounded-xl border border-[var(--border)] bg-bg-elevated px-3 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-accent-primary transition-colors"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { key: 'city',        label: 'Ciudad',        placeholder: 'Quito',            req: true  },
+                { key: 'province',    label: 'Provincia',     placeholder: 'Pichincha',        req: false },
+                { key: 'postal_code', label: 'Código postal', placeholder: '170150',           req: false },
+                { key: 'phone',       label: 'Teléfono',      placeholder: '+593 99 000 0000', req: false },
+              ] as const).map(({ key, label, placeholder, req }) => (
+                <div key={key} className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-text-secondary">{label}</label>
+                  <input
+                    type="text" placeholder={placeholder} required={req}
+                    value={form[key] ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                    className="h-10 rounded-xl border border-[var(--border)] bg-bg-elevated px-3 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-accent-primary transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
+            {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
+            <button
+              type="submit" disabled={saving}
+              className="flex items-center justify-center gap-2 h-10 rounded-xl bg-accent-primary text-white text-sm font-semibold disabled:opacity-60 transition-opacity"
+            >
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              Guardar dirección
+            </button>
+          </form>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center gap-2 h-10 px-4 rounded-xl border-2 border-dashed border-[var(--border)] text-sm font-semibold text-text-secondary hover:border-accent-primary hover:text-accent-primary transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Agregar dirección
+        </button>
+      )}
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'profile', label: 'Perfil' },
   { id: 'orders', label: 'Mis Pedidos' },
+  { id: 'addresses', label: 'Mis Direcciones' },
 ]
 
 export default function AccountPage() {
@@ -438,6 +605,7 @@ export default function AccountPage() {
       <div className="max-w-[1280px] mx-auto w-full px-4 pt-6 flex flex-col items-center">
         {tab === 'profile' && <ProfileTab onRefresh={refreshCustomer} />}
         {tab === 'orders' && <OrdersTab />}
+        {tab === 'addresses' && <AddressesTab />}
       </div>
     </div>
   )

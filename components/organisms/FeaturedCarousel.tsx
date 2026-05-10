@@ -29,7 +29,7 @@ export function FeaturedCarousel({ products }: FeaturedCarouselProps) {
         </button>
         <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.slice(0, 4).map((product) => (
-            <Link key={product.id} href={`/sealed/${product.id}`}>
+            <Link key={product.id} href={`/sealed/${product.id}`} className="block">
               <SealedProductCard
                 product={product}
                 onAddToCart={(variantId) => {

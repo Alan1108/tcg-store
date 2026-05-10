@@ -1,3 +1,5 @@
+export const revalidate = 300 // revalidate product pages every 5 minutes
+
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { BadgeGame, BadgeStock, ButtonGhost, TrustBadge, Divider } from '@/components/atoms';
@@ -9,6 +11,11 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { AddToCartButton } from './add-to-cart-button';
 import { formatPrice } from '@/lib/format';
+
+export async function generateStaticParams() {
+  const { data } = await getSealedProducts({ limit: 200 }).catch(() => ({ data: [] }))
+  return data.map((p) => ({ id: p.id }))
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -98,11 +105,11 @@ export default async function SealedDetailPage({ params }: Props) {
       {related.length > 0 && (
         <div className="px-4 py-6 flex flex-col gap-4">
           <h2 className="font-heading text-xl font-bold text-text-primary">También te puede interesar</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {related.map((p) => (
-              <div key={p.id} className="min-w-[175px]">
-                <Link href={`/sealed/${p.id}`}><SealedProductCard product={p} /></Link>
-              </div>
+              <Link key={p.id} href={`/sealed/${p.id}`} className="block">
+                <SealedProductCard product={p} />
+              </Link>
             ))}
           </div>
         </div>

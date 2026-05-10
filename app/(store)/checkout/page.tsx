@@ -18,19 +18,15 @@ import { useCart } from '@/providers/cart'
 import { sdk } from '@/lib/sdk'
 import { formatPrice } from '@/lib/format'
 import { completeCart } from '@/services/orders.service'
+import { getCustomerAddresses } from '@/services/customers.service'
 import { Divider } from '@/components/atoms'
-
-// ─── Mock addresses ────────────────────────────────────────────────────────────
-// TODO: Replace with real customer addresses fetched from Medusa customer API
-const MOCK_ADDRESSES = [
-  { id: '1', label: 'Casa', street: 'Av. República E3-71', city: 'Quito', province: 'Pichincha' },
-  { id: '2', label: 'Trabajo', street: 'Av. Colón N25-33', city: 'Quito', province: 'Pichincha' },
-] as const
+import type { HttpTypes } from '@medusajs/types'
 
 type ShippingOption = {
   id: string
   name: string
   amount: number | null
+  fulfillmentSetType: string  // 'shipping' | 'pickup' from service_zone.fulfillment_set.type
 }
 
 type PaymentMethod = 'deuna' | 'transfer' | 'card' | null
@@ -51,12 +47,14 @@ function PaymentModal({
   onClose,
   onTransferConfirm,
   isLoading,
+  error,
   currencyCode,
 }: {
   method: PaymentMethod
   onClose: () => void
   onTransferConfirm: () => void
   isLoading: boolean
+  error: string
   currencyCode: string
 }) {
   if (!method) return null
@@ -135,6 +133,9 @@ function PaymentModal({
                 <p className="text-xs text-text-muted text-center leading-5">
                   Tu pedido quedará pendiente hasta confirmar el comprobante de pago.
                 </p>
+                {error && (
+                  <p className="text-xs text-[var(--danger)] text-center">{error}</p>
+                )}
                 <button
                   onClick={onTransferConfirm}
                   disabled={isLoading}
@@ -173,12 +174,14 @@ export default function CheckoutPage() {
   const subtotal = cart?.subtotal ?? 0
 
   const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('delivery')
-  const [selectedAddressId, setSelectedAddressId] = useState<string>(MOCK_ADDRESSES[0].id)
+  const [addresses, setAddresses] = useState<HttpTypes.StoreCustomerAddress[]>([])
+  const [selectedAddress, setSelectedAddress] = useState<HttpTypes.StoreCustomerAddress | null>(null)
   // null = fetch in progress, [] = no options, [...] = options loaded
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[] | null>(null)
   const [selectedShippingId, setSelectedShippingId] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [billing, setBilling] = useState<BillingAddress>({
     first_name: '', last_name: '', address_1: '', city: '',
     province: '', postal_code: '', phone: '',
@@ -186,31 +189,58 @@ export default function CheckoutPage() {
 
   const cartId = cart?.id
 
-  // Fetch Medusa shipping options when delivery is selected.
+  // Load customer saved addresses
+  useEffect(() => {
+    getCustomerAddresses().then((data) => {
+      setAddresses(data)
+      if (data.length > 0) setSelectedAddress(data[0])
+    })
+  }, [])
+
+  // Fetch ALL shipping options once (both delivery and pickup).
   // All setState calls are inside async callbacks to satisfy react-hooks/set-state-in-effect.
   useEffect(() => {
-    if (!cartId || fulfillmentType !== 'delivery') return
+    if (!cartId) return
     sdk.store.fulfillment
       .listCartOptions({ cart_id: cartId })
       .then(({ shipping_options }) => {
-        const opts = shipping_options as ShippingOption[]
+        const raw = shipping_options as unknown as Array<{
+          id: string
+          name: string
+          amount: number | null
+          service_zone?: { fulfillment_set?: { type?: string } }
+        }>
+        const opts: ShippingOption[] = raw.map((o) => ({
+          id: o.id,
+          name: o.name,
+          amount: o.amount,
+          fulfillmentSetType: o.service_zone?.fulfillment_set?.type ?? 'shipping',
+        }))
         setShippingOptions(opts)
-        if (opts.length > 0) setSelectedShippingId(opts[0].id)
+        const firstDelivery = opts.find((o) => o.fulfillmentSetType !== 'pickup')
+        if (firstDelivery) setSelectedShippingId(firstDelivery.id)
       })
       .catch(() => setShippingOptions([]))
-    return () => setShippingOptions(null) // reset to loading for next fetch cycle
-  }, [cartId, fulfillmentType])
+    return () => setShippingOptions(null)
+  }, [cartId])
 
-  const selectedShipping = shippingOptions?.find((o) => o.id === selectedShippingId)
+  const deliveryOptions = (shippingOptions ?? []).filter((o) => o.fulfillmentSetType !== 'pickup')
+  const selectedShipping = deliveryOptions.find((o) => o.id === selectedShippingId)
   const shippingCost = fulfillmentType === 'delivery' ? (selectedShipping?.amount ?? 0) : 0
   const total = subtotal + shippingCost
 
   const handleTransferConfirm = async () => {
     if (!cart?.id) return
     setIsSubmitting(true)
+    setSubmitError('')
     try {
       if (fulfillmentType === 'delivery' && selectedShippingId) {
         await sdk.store.cart.addShippingMethod(cart.id, { option_id: selectedShippingId })
+      } else if (fulfillmentType === 'pickup') {
+        const pickupOption = shippingOptions?.find((o) => o.fulfillmentSetType === 'pickup')
+        if (pickupOption) {
+          await sdk.store.cart.addShippingMethod(cart.id, { option_id: pickupOption.id })
+        }
       }
       const billingAddress = {
         first_name: billing.first_name || undefined,
@@ -222,13 +252,30 @@ export default function CheckoutPage() {
         phone: billing.phone || undefined,
         country_code: 'ec',
       }
-      const order = await completeCart(cart.id, billingAddress)
+      const shippingAddress = selectedAddress
+        ? {
+            first_name: selectedAddress.first_name ?? undefined,
+            last_name: selectedAddress.last_name ?? undefined,
+            address_1: selectedAddress.address_1 ?? undefined,
+            city: selectedAddress.city ?? undefined,
+            province: selectedAddress.province ?? undefined,
+            postal_code: selectedAddress.postal_code ?? undefined,
+            phone: selectedAddress.phone ?? undefined,
+            country_code: selectedAddress.country_code ?? 'ec',
+          }
+        : undefined
+      const order = await completeCart(cart.id, billingAddress, shippingAddress)
       if (order) {
         unsetCart()
         router.push(`/order-confirmation?id=${order.id}`)
       }
-    } catch {
-      // TODO: show error toast
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al procesar el pedido'
+      setSubmitError(
+        msg.includes('shipping profiles')
+          ? 'Error de configuración de envío. Contacta al soporte.'
+          : 'Ocurrió un error al procesar el pedido. Intenta de nuevo.'
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -331,10 +378,10 @@ export default function CheckoutPage() {
                 <div className="flex flex-col gap-2">
                   {shippingOptions === null ? (
                     <p className="text-sm text-text-muted py-2 text-center">Cargando opciones de envío…</p>
-                  ) : shippingOptions.length === 0 ? (
+                  ) : deliveryOptions.length === 0 ? (
                     <p className="text-sm text-text-muted py-2 text-center">No hay opciones de envío disponibles.</p>
                   ) : (
-                    shippingOptions.map((option) => (
+                    deliveryOptions.map((option) => (
                       <button
                         key={option.id}
                         onClick={() => setSelectedShippingId(option.id)}
@@ -372,30 +419,38 @@ export default function CheckoutPage() {
             {fulfillmentType === 'delivery' && (
               <div className="bg-bg-surface rounded-2xl border border-border p-5 flex flex-col gap-3">
                 <h2 className="font-heading text-base font-bold text-text-primary">Dirección de entrega</h2>
-                {/* TODO: Replace MOCK_ADDRESSES with real customer addresses from Medusa */}
-                {MOCK_ADDRESSES.map((addr) => (
-                  <button
-                    key={addr.id}
-                    onClick={() => setSelectedAddressId(addr.id)}
-                    className={`flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-colors ${
-                      selectedAddressId === addr.id
-                        ? 'border-accent-primary bg-(--accent-primary)/5'
-                        : 'border-border hover:border-border-accent'
-                    }`}
-                  >
-                    <MapPin className={`w-4 h-4 shrink-0 mt-0.5 ${selectedAddressId === addr.id ? 'text-accent-primary' : 'text-text-muted'}`} />
-                    <div className="flex-1 flex flex-col gap-0.5">
-                      <span className="text-sm font-semibold text-text-primary">{addr.label}</span>
-                      <span className="text-xs text-text-muted">{addr.street}, {addr.city}</span>
-                    </div>
-                    {selectedAddressId === addr.id && (
-                      <CheckCircle2 className="w-4 h-4 text-accent-primary shrink-0 mt-0.5" />
-                    )}
-                  </button>
-                ))}
-                <button className="text-sm font-semibold text-accent-primary text-left pl-1">
-                  + Agregar nueva dirección
-                </button>
+                {addresses.length === 0 ? (
+                  <p className="text-sm text-text-muted py-1">
+                    No tienes direcciones guardadas.{' '}
+                    <a href="/account" className="text-accent-primary font-semibold hover:underline">
+                      Agregar en Mi Cuenta →
+                    </a>
+                  </p>
+                ) : (
+                  addresses.map((addr) => {
+                    const isSelected = selectedAddress?.id === addr.id
+                    const name = [addr.first_name, addr.last_name].filter(Boolean).join(' ')
+                    const line = [addr.address_1, addr.city].filter(Boolean).join(', ')
+                    return (
+                      <button
+                        key={addr.id}
+                        onClick={() => setSelectedAddress(addr)}
+                        className={`flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-colors ${
+                          isSelected
+                            ? 'border-accent-primary bg-(--accent-primary)/5'
+                            : 'border-border hover:border-border-accent'
+                        }`}
+                      >
+                        <MapPin className={`w-4 h-4 shrink-0 mt-0.5 ${isSelected ? 'text-accent-primary' : 'text-text-muted'}`} />
+                        <div className="flex-1 flex flex-col gap-0.5">
+                          {name && <span className="text-sm font-semibold text-text-primary">{name}</span>}
+                          <span className="text-xs text-text-muted">{line}</span>
+                        </div>
+                        {isSelected && <CheckCircle2 className="w-4 h-4 text-accent-primary shrink-0 mt-0.5" />}
+                      </button>
+                    )
+                  })
+                )}
               </div>
             )}
             {/* Billing address */}
@@ -519,6 +574,7 @@ export default function CheckoutPage() {
         onClose={() => setPaymentMethod(null)}
         onTransferConfirm={handleTransferConfirm}
         isLoading={isSubmitting}
+        error={submitError}
         currencyCode={currencyCode}
       />
     </>

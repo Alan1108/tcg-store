@@ -95,7 +95,7 @@ function SealedCatalogContent() {
       <div className="max-w-[1280px] mx-auto px-4 py-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.map((p) => (
-            <Link key={p.id} href={`/sealed/${p.id}`}>
+            <Link key={p.id} href={`/sealed/${p.id}`} className="block">
               <SealedProductCard
                 product={p}
                 onAddToCart={(variantId) => addToCart(variantId, 1)}

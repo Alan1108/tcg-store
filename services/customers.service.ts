@@ -5,6 +5,7 @@ import { sdk } from '@/lib/sdk'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { syncMedusaCustomer, MEDUSA_TOKEN_COOKIE, medusaCookieOptions } from '@/lib/medusa-sync'
 import type { Customer } from '@/types'
+import type { HttpTypes } from '@medusajs/types'
 
 async function getMedusaToken(): Promise<string | null> {
   return (await cookies()).get(MEDUSA_TOKEN_COOKIE)?.value ?? null
@@ -74,4 +75,41 @@ export async function updateCustomerProfile(
   }
 
   return {}
+}
+
+export async function getCustomerAddresses(): Promise<HttpTypes.StoreCustomerAddress[]> {
+  const headers = await authHeaders()
+  if (!headers.Authorization) return []
+  try {
+    const { addresses } = await sdk.store.customer.listAddress({}, headers)
+    return addresses ?? []
+  } catch {
+    return []
+  }
+}
+
+export async function createCustomerAddress(
+  body: HttpTypes.StoreCreateCustomerAddress
+): Promise<{ error?: string }> {
+  const headers = await authHeaders()
+  if (!headers.Authorization) return { error: 'No autenticado' }
+  try {
+    await sdk.store.customer.createAddress(body, {}, headers)
+    return {}
+  } catch {
+    return { error: 'Error al guardar la dirección' }
+  }
+}
+
+export async function deleteCustomerAddress(
+  addressId: string
+): Promise<{ error?: string }> {
+  const headers = await authHeaders()
+  if (!headers.Authorization) return { error: 'No autenticado' }
+  try {
+    await sdk.store.customer.deleteAddress(addressId, headers)
+    return {}
+  } catch {
+    return { error: 'Error al eliminar la dirección' }
+  }
 }

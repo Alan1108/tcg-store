@@ -29,9 +29,9 @@ export function FooterDesktop() {
         <div className="flex gap-10">
           <div className="w-[280px] flex flex-col gap-4">
             <div className="flex items-center gap-2.5">
-              <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="TCG Shop" className="w-6 h-6 text-accent-primary" />
+              <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="Kado Gallery" className="w-6 h-6 text-accent-primary" />
               <span className="font-heading text-xl font-bold text-text-primary">
-                TCG Shop
+                Kādo Gallery
               </span>
             </div>
             <p className="text-[13px] leading-normal text-text-secondary">
@@ -59,7 +59,7 @@ export function FooterDesktop() {
 
         <div className="flex items-center justify-between">
           <span className="text-xs text-text-muted">
-            © 2026 TCG Shop. Todos los derechos reservados.
+            © 2026 Kādo Gallery. Todos los derechos reservados.
           </span>
         </div>
       </div>
