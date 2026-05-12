@@ -17,8 +17,7 @@ import {
 import { useCart } from '@/providers/cart'
 import { sdk } from '@/lib/sdk'
 import { formatPrice } from '@/lib/format'
-import { completeCart } from '@/services/orders.service'
-import { getCustomerAddresses } from '@/services/customers.service'
+import { getMedusaTokenFromCookie, syncMedusaTokenFromClient } from '@/lib/medusa-client-sync'
 import { Divider } from '@/components/atoms'
 import type { HttpTypes } from '@medusajs/types'
 
@@ -189,12 +188,25 @@ export default function CheckoutPage() {
 
   const cartId = cart?.id
 
-  // Load customer saved addresses
+  // Load customer saved addresses client-side
   useEffect(() => {
-    getCustomerAddresses().then((data) => {
-      setAddresses(data)
-      if (data.length > 0) setSelectedAddress(data[0])
-    })
+    async function loadAddresses() {
+      let token = getMedusaTokenFromCookie()
+      if (!token) {
+        await syncMedusaTokenFromClient()
+        token = getMedusaTokenFromCookie()
+      }
+      if (!token) return
+      try {
+        const { addresses: data } = await sdk.store.customer.listAddress(
+          {},
+          { Authorization: `Bearer ${token}` }
+        )
+        setAddresses(data ?? [])
+        if (data?.length > 0) setSelectedAddress(data[0])
+      } catch { /* guest checkout — no addresses */ }
+    }
+    loadAddresses()
   }, [])
 
   // Fetch ALL shipping options once (both delivery and pickup).
@@ -238,15 +250,24 @@ export default function CheckoutPage() {
     setIsSubmitting(true)
     setSubmitError('')
     try {
+      const token = getMedusaTokenFromCookie()
+      const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+
+      // 1. Add shipping method
       if (fulfillmentType === 'delivery' && selectedShippingId) {
         await sdk.store.cart.addShippingMethod(cart.id, { option_id: selectedShippingId })
       } else if (fulfillmentType === 'pickup') {
         const pickupOption = shippingOptions?.find((o) => o.fulfillmentSetType === 'pickup')
-        if (!pickupOption) {
-          throw new Error('No se encontró una opción de retiro en tienda. Contacta al soporte.')
-        }
+        if (!pickupOption) throw new Error('No se encontró una opción de retiro en tienda.')
         await sdk.store.cart.addShippingMethod(cart.id, { option_id: pickupOption.id })
       }
+
+      // 2. Link customer to cart
+      if (token) {
+        await sdk.store.cart.transferCart(cart.id, {}, authHeaders)
+      }
+
+      // 3. Set billing / shipping addresses
       const billingAddress = {
         first_name: billing.first_name || undefined,
         last_name: billing.last_name || undefined,
@@ -269,13 +290,35 @@ export default function CheckoutPage() {
             country_code: selectedAddress.country_code ?? 'ec',
           }
         : undefined
-      const order = await completeCart(cart.id, billingAddress, shippingAddress)
+      const addressUpdate: HttpTypes.StoreUpdateCart = {
+        ...(billingAddress && { billing_address: billingAddress }),
+        ...(shippingAddress && { shipping_address: shippingAddress }),
+      }
+      if (Object.keys(addressUpdate).length > 0) {
+        await sdk.store.cart.update(cart.id, addressUpdate)
+      }
+
+      // 4. Initiate payment session if none exists
+      const { cart: freshCart } = await sdk.store.cart.retrieve(cart.id, {
+        fields: '+payment_collection',
+      })
+      const hasSession = (freshCart.payment_collection?.payment_sessions?.length ?? 0) > 0
+      if (!hasSession) {
+        await sdk.store.payment.initiatePaymentSession(freshCart, {
+          provider_id: 'pp_system_default',
+        })
+      }
+
+      // 5. Complete cart → order
+      const result = await sdk.store.cart.complete(cart.id, {}, authHeaders)
+      const order = (result as { order?: HttpTypes.StoreOrder }).order
       if (order) {
         unsetCart()
         router.push(`/order-confirmation?id=${order.id}`)
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al procesar el pedido'
+      console.error('[checkout]', err)
+      const msg = err instanceof Error ? err.message : ''
       setSubmitError(
         msg.includes('shipping profiles')
           ? 'Error de configuración de envío. Contacta al soporte.'

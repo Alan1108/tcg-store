@@ -15,6 +15,24 @@ function setMedusaCookieClient(token: string) {
   document.cookie = `${MEDUSA_TOKEN_COOKIE}=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`
 }
 
+async function ensureCustomerProfile(
+  token: string,
+  email: string,
+  firstName: string,
+  lastName: string,
+) {
+  try {
+    await sdk.store.customer.retrieve({}, { Authorization: `Bearer ${token}` })
+  } catch {
+    // Profile missing — create it now from the browser
+    await sdk.store.customer.create(
+      { email, first_name: firstName ?? '', last_name: lastName ?? '' },
+      {},
+      { Authorization: `Bearer ${token}` }
+    )
+  }
+}
+
 export async function syncMedusaTokenFromClient(): Promise<boolean> {
   try {
     const res = await fetch('/api/medusa-credentials', { method: 'POST' })
@@ -24,6 +42,9 @@ export async function syncMedusaTokenFromClient(): Promise<boolean> {
     try {
       const result = await sdk.auth.login('customer', 'emailpass', { email, password })
       if (typeof result === 'string') {
+        // Ensure the customer profile exists (may be missing for Google OAuth users
+        // if the profile creation step failed during a previous auth callback)
+        await ensureCustomerProfile(result, email, firstName, lastName)
         setMedusaCookieClient(result)
         return true
       }
