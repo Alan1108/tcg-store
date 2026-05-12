@@ -23,7 +23,7 @@ export interface PaginatedResponse<T> {
 
 // Fields to request for calculated pricing and inventory
 const PRODUCT_FIELDS =
-  "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder,+variants.options,+variants.options.option,+type,+categories,+images,+tags"
+  "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder,+variants.options,+variants.options.option,+type,+categories,+images,+tags,+metadata,+variants.metadata,+collection,+description"
 
 export const getSealedProducts = cache(async function getSealedProducts(
   filters: ProductFilters = {}

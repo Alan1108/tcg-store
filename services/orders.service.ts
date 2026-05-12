@@ -60,9 +60,13 @@ export async function completeCart(
     fields: '+payment_collection',
   })
 
-  await sdk.store.payment.initiatePaymentSession(cart, {
-    provider_id: 'pp_system_default',
-  })
+  // Skip if a session already exists (e.g. user retries after a failed attempt)
+  const hasSession = (cart.payment_collection?.payment_sessions?.length ?? 0) > 0
+  if (!hasSession) {
+    await sdk.store.payment.initiatePaymentSession(cart, {
+      provider_id: 'pp_system_default',
+    })
+  }
 
   const result = await sdk.store.cart.complete(cartId, {}, headers)
   return (result as { order?: HttpTypes.StoreOrder }).order ?? null

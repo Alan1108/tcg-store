@@ -210,11 +210,15 @@ export default function CheckoutPage() {
           amount: number | null
           service_zone?: { fulfillment_set?: { type?: string } }
         }>
+        const PICKUP_KEYWORDS = ['pickup', 'retiro', 'tienda', 'store']
+        const isPickup = (o: { name: string; service_zone?: { fulfillment_set?: { type?: string } } }) =>
+          o.service_zone?.fulfillment_set?.type === 'pickup' ||
+          PICKUP_KEYWORDS.some((kw) => o.name.toLowerCase().includes(kw))
         const opts: ShippingOption[] = raw.map((o) => ({
           id: o.id,
           name: o.name,
           amount: o.amount,
-          fulfillmentSetType: o.service_zone?.fulfillment_set?.type ?? 'shipping',
+          fulfillmentSetType: isPickup(o) ? 'pickup' : 'shipping',
         }))
         setShippingOptions(opts)
         const firstDelivery = opts.find((o) => o.fulfillmentSetType !== 'pickup')
@@ -238,9 +242,10 @@ export default function CheckoutPage() {
         await sdk.store.cart.addShippingMethod(cart.id, { option_id: selectedShippingId })
       } else if (fulfillmentType === 'pickup') {
         const pickupOption = shippingOptions?.find((o) => o.fulfillmentSetType === 'pickup')
-        if (pickupOption) {
-          await sdk.store.cart.addShippingMethod(cart.id, { option_id: pickupOption.id })
+        if (!pickupOption) {
+          throw new Error('No se encontró una opción de retiro en tienda. Contacta al soporte.')
         }
+        await sdk.store.cart.addShippingMethod(cart.id, { option_id: pickupOption.id })
       }
       const billingAddress = {
         first_name: billing.first_name || undefined,

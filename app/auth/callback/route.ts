@@ -19,6 +19,12 @@ export async function GET(request: NextRequest) {
       const fullName: string = meta.full_name ?? meta.name ?? ''
       const [firstName, ...rest] = fullName.split(' ')
       const lastName = rest.join(' ')
+      const avatarUrl: string | null = meta.avatar_url ?? meta.picture ?? null
+
+      // Explicitly persist avatar_url so it's reliably available across sessions
+      if (avatarUrl && !meta.avatar_url) {
+        await supabase.auth.updateUser({ data: { avatar_url: avatarUrl } })
+      }
 
       const medusaToken = await syncMedusaCustomer(
         user.id,

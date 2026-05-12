@@ -36,7 +36,9 @@ function getStockConfig(inventoryQuantity?: number | null, manageInventory?: boo
 }
 
 export function SealedProductCard({ product, onAddToCart }: SealedProductCardProps) {
-  const game = (product.metadata?.game as GameSystem) ?? '';
+  const VALID_GAMES: GameSystem[] = ['pokemon', 'mtg', 'yugioh', 'lorcana', 'onepiece'];
+  const collectionHandle = product.collection?.handle ?? '';
+  const game = (VALID_GAMES.includes(collectionHandle as GameSystem) ? collectionHandle : '') as GameSystem | '';
   const imageUrl = product.thumbnail ?? product.images?.[0]?.url;
   const firstVariant = product.variants?.[0];
   const price = firstVariant?.calculated_price?.calculated_amount ?? 0;

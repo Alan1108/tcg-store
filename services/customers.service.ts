@@ -78,12 +78,16 @@ export async function updateCustomerProfile(
 }
 
 export async function getCustomerAddresses(): Promise<HttpTypes.StoreCustomerAddress[]> {
-  const headers = await authHeaders()
-  if (!headers.Authorization) return []
+  const token = await ensureMedusaToken()
+  if (!token) return []
   try {
-    const { addresses } = await sdk.store.customer.listAddress({}, headers)
+    const { addresses } = await sdk.store.customer.listAddress(
+      {},
+      { Authorization: `Bearer ${token}` }
+    )
     return addresses ?? []
-  } catch {
+  } catch (e) {
+    console.error('[getCustomerAddresses] failed:', e)
     return []
   }
 }
@@ -91,12 +95,17 @@ export async function getCustomerAddresses(): Promise<HttpTypes.StoreCustomerAdd
 export async function createCustomerAddress(
   body: HttpTypes.StoreCreateCustomerAddress
 ): Promise<{ error?: string }> {
-  const headers = await authHeaders()
-  if (!headers.Authorization) return { error: 'No autenticado' }
+  const token = await ensureMedusaToken()
+  if (!token) return { error: 'No autenticado' }
   try {
-    await sdk.store.customer.createAddress(body, {}, headers)
+    await sdk.store.customer.createAddress(
+      body,
+      {},
+      { Authorization: `Bearer ${token}` }
+    )
     return {}
-  } catch {
+  } catch (e) {
+    console.error('[createCustomerAddress] failed:', e)
     return { error: 'Error al guardar la dirección' }
   }
 }
@@ -104,12 +113,16 @@ export async function createCustomerAddress(
 export async function deleteCustomerAddress(
   addressId: string
 ): Promise<{ error?: string }> {
-  const headers = await authHeaders()
-  if (!headers.Authorization) return { error: 'No autenticado' }
+  const token = await ensureMedusaToken()
+  if (!token) return { error: 'No autenticado' }
   try {
-    await sdk.store.customer.deleteAddress(addressId, headers)
+    await sdk.store.customer.deleteAddress(
+      addressId,
+      { Authorization: `Bearer ${token}` }
+    )
     return {}
-  } catch {
+  } catch (e) {
+    console.error('[deleteCustomerAddress] failed:', e)
     return { error: 'Error al eliminar la dirección' }
   }
 }
