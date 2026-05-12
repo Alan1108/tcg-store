@@ -16,7 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const products = await getFeaturedProducts(8).catch(() => []);
+  const products = await getFeaturedProducts(8).catch((err) => {
+    console.error('[FeaturedProducts] failed to fetch:', err)
+    return []
+  });
 
   const structuredData = {
     '@context': 'https://schema.org',
