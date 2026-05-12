@@ -2,11 +2,12 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-function isComingSoonEnabled(): boolean {
-  const raw = process.env.COMING_SOON ?? process.env.NEXT_PUBLIC_COMING_SOON ?? ''
-  const v = raw.toLowerCase().trim()
-  if (v === '' || v === 'false' || v === '0' || v === 'no' || v === 'off') return false
-  return v === 'true' || v === '1' || v === 'yes'
+export const BYPASS_COOKIE = 'cs_bypass'
+
+function isComingSoonEnabled(request: NextRequest): boolean {
+  const bypassToken = process.env.COMING_SOON_BYPASS_TOKEN
+  if (bypassToken && request.cookies.get(BYPASS_COOKIE)?.value === bypassToken) return false
+  return true
 }
 
 const PROTECTED_PATHS = ['/account', '/cart']
@@ -15,9 +16,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Coming soon redirect — takes priority over everything
-  if (isComingSoonEnabled()) {
+  if (isComingSoonEnabled(request)) {
     if (
       !pathname.startsWith('/coming-soon') &&
+      !pathname.startsWith('/api/preview') &&
       !pathname.startsWith('/_next') &&
       pathname !== '/favicon.ico' &&
       pathname !== '/robots.txt' &&
