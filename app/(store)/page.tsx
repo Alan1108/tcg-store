@@ -1,10 +1,7 @@
-export const revalidate = 3600 // revalidate home page every hour
-
 import type { Metadata } from "next";
 import Image from 'next/image';
-import { HeroBanner, GameSystemGrid, FeaturedCarousel } from '@/components/organisms';
+import { HeroBanner, GameSystemGrid, FeaturedProducts } from '@/components/organisms';
 import { seoConfig } from '@/lib/seo';
-import { getFeaturedProducts } from '@/services/products.service';
 
 export const metadata: Metadata = {
   title: "Tienda de cartas Pokémon y One Piece en Ecuador",
@@ -15,12 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function HomePage() {
-  const products = await getFeaturedProducts(8).catch((err) => {
-    console.error('[FeaturedProducts] failed to fetch:', err)
-    return []
-  });
-
+export default function HomePage() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -69,7 +61,7 @@ export default async function HomePage() {
         <GameSystemGrid />
       </div>
       <div className="px-4 md:px-0 max-w-[1280px] mx-auto w-full">
-        <FeaturedCarousel products={products} />
+        <FeaturedProducts />
       </div>
       <section className="px-4 md:px-0 max-w-[1280px] mx-auto w-full overflow-hidden">
         {/* Header row */}

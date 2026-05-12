@@ -12,3 +12,4 @@ export { SinglesInquiryForm } from './SinglesInquiryForm';
 export { CartDrawer } from './CartDrawer';
 export { AuthModal } from './AuthModal';
 export { HeaderSearch } from './HeaderSearch';
+export { FeaturedProducts } from './FeaturedProducts';
