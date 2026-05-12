@@ -42,23 +42,36 @@ export async function syncMedusaTokenFromClient(): Promise<boolean> {
     try {
       const result = await sdk.auth.login('customer', 'emailpass', { email, password })
       if (typeof result === 'string') {
-        // Ensure the customer profile exists (may be missing for Google OAuth users
-        // if the profile creation step failed during a previous auth callback)
-        await ensureCustomerProfile(result, email, firstName, lastName)
+        // Set cookie immediately so the token is never lost due to a profile error
         setMedusaCookieClient(result)
+        try {
+          await ensureCustomerProfile(result, email, firstName, lastName)
+        } catch (profileErr) {
+          console.error('[medusa-client-sync] Profile ensure failed:', profileErr)
+        }
         return true
       }
-    } catch {
+    } catch (loginErr) {
       // No auth identity yet — register then create profile
-      const token = String(
-        await sdk.auth.register('customer', 'emailpass', { email, password })
-      )
-      await sdk.store.customer.create(
-        { email, first_name: firstName ?? '', last_name: lastName ?? '' },
-        {},
-        { Authorization: `Bearer ${token}` }
-      )
+      let token: string
+      try {
+        token = String(await sdk.auth.register('customer', 'emailpass', { email, password }))
+      } catch (registerErr) {
+        console.error('[medusa-client-sync] Login and register both failed:', { loginErr, registerErr })
+        throw registerErr
+      }
+
+      // Set cookie before profile creation for the same reason as above
       setMedusaCookieClient(token)
+      try {
+        await sdk.store.customer.create(
+          { email, first_name: firstName ?? '', last_name: lastName ?? '' },
+          {},
+          { Authorization: `Bearer ${token}` }
+        )
+      } catch (profileErr) {
+        console.error('[medusa-client-sync] Profile creation failed:', profileErr)
+      }
       return true
     }
   } catch (e) {

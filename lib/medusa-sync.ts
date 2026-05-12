@@ -23,18 +23,32 @@ export async function syncMedusaCustomer(
       // login returns the JWT token directly as a string, or { location } for OAuth redirects
       if (typeof result === 'string') return result
       return null
-    } catch {
-      // Customer auth identity doesn't exist yet — register and create profile
-      const token = String(await sdk.auth.register('customer', 'emailpass', { email, password }))
-      await sdk.store.customer.create(
-        { email, first_name: firstName ?? '', last_name: lastName ?? '' },
-        {},
-        { Authorization: `Bearer ${token}` }
-      )
+    } catch (loginErr) {
+      // Customer auth identity doesn't exist yet — register then create profile
+      let token: string
+      try {
+        token = String(await sdk.auth.register('customer', 'emailpass', { email, password }))
+      } catch (registerErr) {
+        console.error('[medusa-sync] Login and register both failed:', { loginErr, registerErr })
+        return null
+      }
+
+      // Profile creation is best-effort — a failed create is recovered by ensureCustomerProfile
+      // on the next client-side sync. Never discard a valid token because of a profile error.
+      try {
+        await sdk.store.customer.create(
+          { email, first_name: firstName ?? '', last_name: lastName ?? '' },
+          {},
+          { Authorization: `Bearer ${token}` }
+        )
+      } catch (profileErr) {
+        console.error('[medusa-sync] Profile creation failed (will retry client-side):', profileErr)
+      }
+
       return token
     }
   } catch (e) {
-    console.error('[medusa-sync] Failed to sync customer:', e)
+    console.error('[medusa-sync] Unexpected error:', e)
     return null
   }
 }
