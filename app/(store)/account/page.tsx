@@ -8,11 +8,19 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { updateCustomerProfile } from '@/services/customers.service'
 import { sdk } from '@/lib/sdk'
 import { getMedusaTokenFromCookie, syncMedusaTokenFromClient } from '@/lib/medusa-client-sync'
-import { getCustomerOrders } from '@/services/orders.service'
 import { BadgeOrderStatus } from '@/components/atoms'
 import { formatPrice } from '@/lib/format'
 import type { Order, OrderStatus } from '@/types'
 import type { HttpTypes } from '@medusajs/types'
+
+async function getTokenClient(): Promise<string | null> {
+  let token = getMedusaTokenFromCookie()
+  if (!token) {
+    await syncMedusaTokenFromClient()
+    token = getMedusaTokenFromCookie()
+  }
+  return token
+}
 
 type Tab = 'profile' | 'orders' | 'addresses'
 
@@ -303,10 +311,17 @@ function OrdersTab() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getCustomerOrders()
-      .then(({ data }) => setOrders(data))
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false))
+    getTokenClient().then(async (token) => {
+      if (!token) { setLoading(false); return }
+      try {
+        const { orders: data } = await sdk.store.order.list(
+          { limit: 20, offset: 0, fields: '+items.*,+items.variant.*,+items.variant.product.*,+payment_status,+fulfillment_status', order: '-created_at' } as Parameters<typeof sdk.store.order.list>[0],
+          { Authorization: `Bearer ${token}` }
+        )
+        setOrders(data as Order[])
+      } catch { setOrders([]) }
+      setLoading(false)
+    })
   }, [])
 
   if (loading) {
@@ -357,37 +372,43 @@ function AddressesTab() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  async function getToken(): Promise<string | null> {
-    let token = getMedusaTokenFromCookie()
-    if (!token) {
-      await syncMedusaTokenFromClient()
-      token = getMedusaTokenFromCookie()
-    }
-    return token
-  }
-
-  const load = async () => {
+  const reload = async () => {
     setLoading(true)
     try {
-      const token = await getToken()
+      const token = await getTokenClient()
       if (!token) { setLoading(false); return }
-      const { addresses } = await sdk.store.customer.listAddress(
+      const { addresses: data } = await sdk.store.customer.listAddress(
         {},
         { Authorization: `Bearer ${token}` }
       )
-      setAddresses(addresses ?? [])
+      setAddresses(data ?? [])
     } catch { /* silent */ }
     setLoading(false)
   }
 
-  useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    async function fetchAddresses() {
+      setLoading(true)
+      try {
+        const token = await getTokenClient()
+        if (!token) { setLoading(false); return }
+        const { addresses: data } = await sdk.store.customer.listAddress(
+          {},
+          { Authorization: `Bearer ${token}` }
+        )
+        setAddresses(data ?? [])
+      } catch { /* silent */ }
+      setLoading(false)
+    }
+    fetchAddresses()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError('')
     try {
-      const token = await getToken()
+      const token = await getTokenClient()
       if (!token) { setError('No autenticado'); setSaving(false); return }
       await sdk.store.customer.createAddress(
         form,
@@ -396,7 +417,7 @@ function AddressesTab() {
       )
       setForm(EMPTY_ADDR)
       setShowForm(false)
-      await load()
+      await reload()
     } catch (e) {
       console.error('[createAddress]', e)
       setError('Error al guardar la dirección')
@@ -406,7 +427,7 @@ function AddressesTab() {
 
   const handleDelete = async (id: string) => {
     try {
-      const token = await getToken()
+      const token = await getTokenClient()
       if (!token) return
       await sdk.store.customer.deleteAddress(id, { Authorization: `Bearer ${token}` })
       setAddresses((prev) => prev.filter((a) => a.id !== id))
