@@ -1,5 +1,9 @@
+import { cache } from "react"
 import type { HttpTypes } from "@medusajs/types"
 import { sdk } from "@/lib/sdk"
+
+const SEALED_TYPE_ID = process.env.NEXT_PUBLIC_SEALED_TYPE_ID
+const SINGLE_TYPE_ID = process.env.NEXT_PUBLIC_SINGLE_TYPE_ID
 
 export interface ProductFilters {
   search?: string
@@ -21,14 +25,14 @@ export interface PaginatedResponse<T> {
 const PRODUCT_FIELDS =
   "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder,+variants.options,+variants.options.option,+type,+categories,+images,+tags"
 
-export async function getSealedProducts(
+export const getSealedProducts = cache(async function getSealedProducts(
   filters: ProductFilters = {}
 ): Promise<PaginatedResponse<HttpTypes.StoreProduct>> {
   const { page = 1, limit = 20, search, regionId, tagValue } = filters
 
-  // When filtering by tag we fetch a large batch and filter in-memory,
-  // because the store API only supports tag_id[] (not tag value).
-  const fetchLimit = tagValue ? 200 : limit
+  // When filtering by tag we fetch a capped batch and filter in-memory,
+  // because the store API only supports tag_id[] (not tag value strings).
+  const fetchLimit = tagValue ? Math.min(limit * 3, 60) : limit
   const offset = tagValue ? 0 : (page - 1) * limit
 
   const { products, count } = await sdk.store.product.list({
@@ -37,9 +41,10 @@ export async function getSealedProducts(
     offset,
     fields: PRODUCT_FIELDS,
     ...(regionId && { region_id: regionId }),
+    ...(SEALED_TYPE_ID ? { type_id: [SEALED_TYPE_ID] } : {}),
   } as Parameters<typeof sdk.store.product.list>[0])
 
-  let sealed = products.filter((p) => p.type?.value === "sealed")
+  let sealed = SEALED_TYPE_ID ? products : products.filter((p) => p.type?.value === "sealed")
 
   if (tagValue) {
     sealed = sealed.filter((p) =>
@@ -56,9 +61,9 @@ export async function getSealedProducts(
     page,
     totalPages: Math.ceil(total / limit),
   }
-}
+})
 
-export async function getSealedProductById(
+export const getSealedProductById = cache(async function getSealedProductById(
   id: string,
   regionId?: string
 ): Promise<HttpTypes.StoreProduct | null> {
@@ -67,9 +72,9 @@ export async function getSealedProductById(
     ...(regionId && { region_id: regionId }),
   } as Parameters<typeof sdk.store.product.retrieve>[1])
   return product ?? null
-}
+})
 
-export async function getSingleCards(
+export const getSingleCards = cache(async function getSingleCards(
   filters: ProductFilters = {}
 ): Promise<PaginatedResponse<HttpTypes.StoreProduct>> {
   const { page = 1, limit = 20, search, regionId } = filters
@@ -81,18 +86,19 @@ export async function getSingleCards(
     offset,
     fields: PRODUCT_FIELDS,
     ...(regionId && { region_id: regionId }),
+    ...(SINGLE_TYPE_ID ? { type_id: [SINGLE_TYPE_ID] } : {}),
   } as Parameters<typeof sdk.store.product.list>[0])
 
-  const singles = products.filter((p) => p.type?.value === "single")
+  const singles = SINGLE_TYPE_ID ? products : products.filter((p) => p.type?.value === "single")
   return {
     data: singles,
     total: count ?? singles.length,
     page,
     totalPages: Math.ceil((count ?? singles.length) / limit),
   }
-}
+})
 
-export async function getSingleCardById(
+export const getSingleCardById = cache(async function getSingleCardById(
   id: string,
   regionId?: string
 ): Promise<HttpTypes.StoreProduct | null> {
@@ -101,9 +107,9 @@ export async function getSingleCardById(
     ...(regionId && { region_id: regionId }),
   } as Parameters<typeof sdk.store.product.retrieve>[1])
   return product ?? null
-}
+})
 
-export async function getFeaturedProducts(
+export const getFeaturedProducts = cache(async function getFeaturedProducts(
   limit = 8,
   regionId?: string
 ): Promise<HttpTypes.StoreProduct[]> {
@@ -111,11 +117,12 @@ export async function getFeaturedProducts(
     limit,
     fields: PRODUCT_FIELDS,
     ...(regionId && { region_id: regionId }),
+    ...(SEALED_TYPE_ID ? { type_id: [SEALED_TYPE_ID] } : {}),
   } as Parameters<typeof sdk.store.product.list>[0])
-  return products.filter((p) => p.type?.value === "sealed")
-}
+  return SEALED_TYPE_ID ? products : products.filter((p) => p.type?.value === "sealed")
+})
 
-export async function getProductsByIds(
+export const getProductsByIds = cache(async function getProductsByIds(
   ids: string[],
   regionId?: string
 ): Promise<HttpTypes.StoreProduct[]> {
@@ -127,9 +134,9 @@ export async function getProductsByIds(
     ...(regionId && { region_id: regionId }),
   } as Parameters<typeof sdk.store.product.list>[0])
   return products
-}
+})
 
-export async function searchProducts(
+export const searchProducts = cache(async function searchProducts(
   query: string,
   regionId?: string
 ): Promise<{ sealed: HttpTypes.StoreProduct[]; singles: HttpTypes.StoreProduct[] }> {
@@ -143,4 +150,4 @@ export async function searchProducts(
     sealed: products.filter((p) => p.type?.value === "sealed"),
     singles: products.filter((p) => p.type?.value === "single"),
   }
-}
+})

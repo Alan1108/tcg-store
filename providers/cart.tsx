@@ -75,7 +75,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const removeItem = async (lineItemId: string): Promise<Cart> => {
     if (!cart) throw new Error("No active cart")
-    await sdk.store.cart.deleteLineItem(cart.id, lineItemId)
+    const { parent } = await sdk.store.cart.deleteLineItem(cart.id, lineItemId)
+    if (parent) {
+      setCart(parent as Cart)
+      return parent as Cart
+    }
     const { cart: dataCart } = await sdk.store.cart.retrieve(cart.id, {
       fields: "+items.variant.*,+items.variant.options.*",
     })

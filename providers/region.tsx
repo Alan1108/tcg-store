@@ -14,8 +14,16 @@ export function RegionProvider({ children }: { children: React.ReactNode }) {
   const [region, setRegion] = useState<Region | undefined>()
 
   useEffect(() => {
+    const cached = localStorage.getItem('medusa_region')
+    if (cached) {
+      try { setRegion(JSON.parse(cached)) } catch { /* ignore corrupt cache */ }
+    }
+
     sdk.store.region.list().then(({ regions }) => {
-      if (regions.length > 0) setRegion(regions[0])
+      if (regions.length > 0) {
+        setRegion(regions[0])
+        localStorage.setItem('medusa_region', JSON.stringify(regions[0]))
+      }
     })
   }, [])
 
