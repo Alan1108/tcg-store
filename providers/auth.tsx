@@ -11,6 +11,7 @@ import type { User } from '@supabase/supabase-js'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { getCurrentCustomer } from '@/services/customers.service'
 import { clearMedusaTokenAction } from '@/services/auth.service'
+import { syncMedusaTokenFromClient } from '@/lib/medusa-client-sync'
 import type { Customer } from '@/types'
 
 export type AuthModalTab = 'login' | 'register'
@@ -39,7 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createSupabaseBrowserClient()
 
   const refreshCustomer = useCallback(async () => {
-    const c = await getCurrentCustomer()
+    let c = await getCurrentCustomer()
+    if (!c) {
+      // No Medusa token or expired — sync from browser then retry once
+      await syncMedusaTokenFromClient()
+      c = await getCurrentCustomer()
+    }
     setCustomer(c)
   }, [])
 

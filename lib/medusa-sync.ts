@@ -1,6 +1,6 @@
 import { sdk } from '@/lib/sdk'
 
-async function deriveMedusaPassword(uid: string): Promise<string> {
+export async function deriveMedusaPassword(uid: string): Promise<string> {
   const secret = process.env.MEDUSA_CUSTOMER_SYNC_SECRET!
   const data = new TextEncoder().encode(`${uid}:${secret}`)
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)

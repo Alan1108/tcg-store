@@ -20,6 +20,8 @@ export async function proxy(request: NextRequest) {
     if (
       !pathname.startsWith('/coming-soon') &&
       !pathname.startsWith('/api/preview') &&
+      !pathname.startsWith('/api/medusa-credentials') &&
+      !pathname.startsWith('/api/medusa-token') &&
       !pathname.startsWith('/_next') &&
       pathname !== '/favicon.ico' &&
       pathname !== '/robots.txt' &&
