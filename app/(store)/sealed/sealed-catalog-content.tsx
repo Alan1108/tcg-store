@@ -9,7 +9,13 @@ import type { HttpTypes } from '@medusajs/types';
 import { getSealedProducts } from '@/services/products.service';
 import { useCart } from '@/providers/cart';
 
-const categories = ['Booster Box', 'ETB', 'Booster Pack', 'Bundle', 'Collection'];
+const categories: { label: string; tag: string }[] = [
+  { label: 'Booster Box', tag: 'booster-box' },
+  { label: 'ETB', tag: 'etb' },
+  { label: 'Booster Pack', tag: 'booster-pack' },
+  { label: 'Bundle', tag: 'bundle' },
+  { label: 'Collection', tag: 'collection' },
+];
 const sortOptions = [
   { value: 'newest', label: 'Más recientes' },
   { value: 'price_asc', label: 'Precio menor' },
@@ -57,6 +63,11 @@ export function SealedCatalogContent() {
     });
   }, [search, page, game]);
 
+  const activeTag = categories.find((c) => c.label === activeCategory)?.tag;
+  const displayed = activeTag
+    ? products.filter((p) => p.tags?.some((t) => t.value === activeTag))
+    : products;
+
   return (
     <div className="flex flex-col">
       <div className="bg-bg-surface py-6">
@@ -79,12 +90,12 @@ export function SealedCatalogContent() {
           </h1>
           <InputSearch placeholder="Buscar productos..." value={search} onChange={setSearch} />
           <div className="flex gap-2 flex-wrap">
-            {categories.map((cat) => (
-              <ChipSelection key={cat} label={cat} active={activeCategory === cat} onClick={() => setActiveCategory(activeCategory === cat ? '' : cat)} />
+            {categories.map(({ label }) => (
+              <ChipSelection key={label} label={label} active={activeCategory === label} onClick={() => setActiveCategory(activeCategory === label ? '' : label)} />
             ))}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-text-secondary">{total} productos</span>
+            <span className="text-sm text-text-secondary">{activeTag ? displayed.length : total} productos</span>
             <div className="flex items-center gap-2">
               <InputDropdown options={sortOptions} value={sortBy} onChange={setSortBy} className="w-40" />
               <ButtonSecondary label="Filtrar" />
@@ -94,7 +105,7 @@ export function SealedCatalogContent() {
       </div>
       <div className="max-w-[1280px] mx-auto px-4 py-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.map((p) => (
+          {displayed.map((p) => (
             <Link key={p.id} href={`/sealed/${p.id}`} className="block">
               <SealedProductCard
                 product={p}

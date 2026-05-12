@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, ShoppingCart, Menu, User, Heart } from 'lucide-react';
+import { Search, ShoppingCart, Menu, User, Heart, X } from 'lucide-react';
 import { useCart } from '@/providers/cart';
 import { useAuth } from '@/providers/auth';
 import { useWishlist } from '@/providers/wishlist';
 import Image from 'next/image';
+import { useState } from 'react';
+import { HeaderSearch } from './HeaderSearch';
 
 interface NavbarMobileProps {
   onMenuOpen?: () => void;
@@ -15,6 +17,7 @@ export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
   const { cart } = useCart();
   const { user, customer, openAuthModal } = useAuth();
   const { items: wishlistItems } = useWishlist();
+  const [searchOpen, setSearchOpen] = useState(false);
   const cartCount = cart?.items?.reduce((n, i) => n + (i.quantity ?? 0), 0) ?? 0;
   const wishlistCount = wishlistItems.length;
 
@@ -24,7 +27,8 @@ export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
   const avatarUrl: string | undefined = user?.user_metadata?.avatar_url
 
   return (
-    <nav className="flex md:hidden items-center justify-between w-full h-14 bg-bg-surface px-4 border-b border-border">
+    <div className="flex md:hidden flex-col bg-bg-surface border-b border-border">
+    <nav className="flex items-center justify-between w-full h-14 px-4">
       <Link href="/" className="flex items-center gap-2">
         <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="TCG Shop" className="w-6 h-6 text-accent-primary" />
         <span className="font-heading text-lg font-bold text-text-primary">
@@ -33,8 +37,13 @@ export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
       </Link>
 
       <div className="flex items-center gap-1">
-        <button className="flex items-center justify-center w-9 h-9 rounded-lg">
-          <Search className="w-5 h-5 text-text-secondary" />
+        <button
+          onClick={() => setSearchOpen((o) => !o)}
+          className="flex items-center justify-center w-9 h-9 rounded-lg"
+        >
+          {searchOpen
+            ? <X className="w-5 h-5 text-text-secondary" />
+            : <Search className="w-5 h-5 text-text-secondary" />}
         </button>
         <Link href="/wishlist" className="relative flex items-center justify-center w-9 h-9 rounded-lg">
           <Heart
@@ -80,5 +89,14 @@ export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
         </button>
       </div>
     </nav>
+    {searchOpen && (
+      <div className="px-4 pb-3">
+        <HeaderSearch
+          placeholder="Buscar productos..."
+          onSelect={() => setSearchOpen(false)}
+        />
+      </div>
+    )}
+    </div>
   );
 }

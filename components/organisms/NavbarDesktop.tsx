@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, Heart, ShoppingCart, User, LogOut } from 'lucide-react';
+import { Heart, ShoppingCart, User, LogOut } from 'lucide-react';
+import { HeaderSearch } from './HeaderSearch';
 import { useCart } from '@/providers/cart';
 import { useAuth } from '@/providers/auth';
 import { useWishlist } from '@/providers/wishlist';
@@ -41,14 +42,7 @@ export function NavbarDesktop() {
         </span>
       </Link>
 
-      <div className="bg-white flex items-center gap-2.5 rounded-[10px] border h-10 px-3.5 flex-1 max-w-xl mx-6">
-        <Search className="w-[18px] h-[18px] text-text-muted" />
-        <input
-          type="text"
-          placeholder="Buscar cartas, sets, productos..."
-          className="bg-transparent text-sm font-normal text-text-primary placeholder:text-text-muted outline-none w-full"
-        />
-      </div>
+      <HeaderSearch className="flex-1 max-w-xl mx-6" />
 
       <div className="flex items-center gap-2">
         <Link href="/sealed" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">

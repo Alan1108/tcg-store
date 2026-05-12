@@ -11,3 +11,4 @@ export { SinglesCard } from './SinglesCard';
 export { SinglesInquiryForm } from './SinglesInquiryForm';
 export { CartDrawer } from './CartDrawer';
 export { AuthModal } from './AuthModal';
+export { HeaderSearch } from './HeaderSearch';
