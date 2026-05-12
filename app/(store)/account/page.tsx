@@ -5,7 +5,9 @@ import Image from 'next/image'
 import { Camera, Eye, EyeOff, Loader2, LogOut, MapPin, Package, Plus, Trash2, User, X } from 'lucide-react'
 import { useAuth } from '@/providers/auth'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
-import { updateCustomerProfile, getCustomerAddresses, createCustomerAddress, deleteCustomerAddress } from '@/services/customers.service'
+import { updateCustomerProfile } from '@/services/customers.service'
+import { sdk } from '@/lib/sdk'
+import { getMedusaTokenFromCookie, syncMedusaTokenFromClient } from '@/lib/medusa-client-sync'
 import { getCustomerOrders } from '@/services/orders.service'
 import { BadgeOrderStatus } from '@/components/atoms'
 import { formatPrice } from '@/lib/format'
@@ -355,37 +357,62 @@ function AddressesTab() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
+  async function getToken(): Promise<string | null> {
+    let token = getMedusaTokenFromCookie()
+    if (!token) {
+      await syncMedusaTokenFromClient()
+      token = getMedusaTokenFromCookie()
+    }
+    return token
+  }
+
   const load = async () => {
     setLoading(true)
-    setAddresses(await getCustomerAddresses())
+    try {
+      const token = await getToken()
+      if (!token) { setLoading(false); return }
+      const { addresses } = await sdk.store.customer.listAddress(
+        {},
+        { Authorization: `Bearer ${token}` }
+      )
+      setAddresses(addresses ?? [])
+    } catch { /* silent */ }
     setLoading(false)
   }
 
-  // Initial fetch — all setState calls are in async callbacks to satisfy react-hooks/set-state-in-effect
-  useEffect(() => {
-    getCustomerAddresses()
-      .then(setAddresses)
-      .finally(() => setLoading(false))
-  }, [])
+  useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError('')
-    const result = await createCustomerAddress(form)
-    if (result.error) {
-      setError(result.error)
-    } else {
+    try {
+      const token = await getToken()
+      if (!token) { setError('No autenticado'); setSaving(false); return }
+      await sdk.store.customer.createAddress(
+        form,
+        {},
+        { Authorization: `Bearer ${token}` }
+      )
       setForm(EMPTY_ADDR)
       setShowForm(false)
       await load()
+    } catch (e) {
+      console.error('[createAddress]', e)
+      setError('Error al guardar la dirección')
     }
     setSaving(false)
   }
 
   const handleDelete = async (id: string) => {
-    await deleteCustomerAddress(id)
-    setAddresses((prev) => prev.filter((a) => a.id !== id))
+    try {
+      const token = await getToken()
+      if (!token) return
+      await sdk.store.customer.deleteAddress(id, { Authorization: `Bearer ${token}` })
+      setAddresses((prev) => prev.filter((a) => a.id !== id))
+    } catch (e) {
+      console.error('[deleteAddress]', e)
+    }
   }
 
   if (loading) {

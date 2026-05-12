@@ -1,30 +1,34 @@
 'use client'
 
 import { sdk } from '@/lib/sdk'
+import { MEDUSA_TOKEN_COOKIE } from '@/lib/medusa-sync'
 
-async function setMedusaCookie(token: string) {
-  await fetch('/api/medusa-token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
-  })
+export function getMedusaTokenFromCookie(): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(new RegExp(`(?:^|; )${MEDUSA_TOKEN_COOKIE}=([^;]+)`))
+  return match ? decodeURIComponent(match[1]) : null
 }
 
-// Authenticates the current Supabase user with Medusa entirely from the
-// browser, then persists the token as an httpOnly cookie via an API route.
-export async function syncMedusaTokenFromClient(): Promise<void> {
+function setMedusaCookieClient(token: string) {
+  const maxAge = 60 * 60 * 24 * 7
+  const secure = location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${MEDUSA_TOKEN_COOKIE}=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`
+}
+
+export async function syncMedusaTokenFromClient(): Promise<boolean> {
   try {
     const res = await fetch('/api/medusa-credentials', { method: 'POST' })
-    if (!res.ok) return
+    if (!res.ok) return false
     const { email, password, firstName, lastName } = await res.json()
 
     try {
       const result = await sdk.auth.login('customer', 'emailpass', { email, password })
       if (typeof result === 'string') {
-        await setMedusaCookie(result)
+        setMedusaCookieClient(result)
+        return true
       }
     } catch {
-      // No auth identity yet — register and create the customer profile
+      // No auth identity yet — register then create profile
       const token = String(
         await sdk.auth.register('customer', 'emailpass', { email, password })
       )
@@ -33,9 +37,11 @@ export async function syncMedusaTokenFromClient(): Promise<void> {
         {},
         { Authorization: `Bearer ${token}` }
       )
-      await setMedusaCookie(token)
+      setMedusaCookieClient(token)
+      return true
     }
   } catch (e) {
     console.error('[medusa-client-sync] failed:', e)
   }
+  return false
 }
