@@ -34,7 +34,7 @@ export function NavbarDesktop() {
   const avatarUrl: string | undefined = user?.user_metadata?.avatar_url
 
   return (
-    <nav className="hidden md:flex items-center justify-between w-full h-16 bg-bg-surface px-6 border-b border-border">
+    <nav className="hidden md:flex items-center justify-between w-full h-16 bg-bg-surface px-6 border-b border-border sticky top-0 z-40">
       <Link href="/" className="flex items-center gap-2.5">
         <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="TCG Shop" className="w-6 h-6 text-accent-primary" />
         <span className="font-heading text-[22px] font-bold text-text-primary">

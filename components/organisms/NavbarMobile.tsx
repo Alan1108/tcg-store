@@ -27,7 +27,7 @@ export function NavbarMobile({ onMenuOpen }: NavbarMobileProps) {
   const avatarUrl: string | undefined = user?.user_metadata?.avatar_url
 
   return (
-    <div className="flex md:hidden flex-col bg-bg-surface border-b border-border">
+    <div className="flex md:hidden flex-col bg-bg-surface border-b border-border sticky top-0 z-40">
     <nav className="flex items-center justify-between w-full h-14 px-4">
       <Link href="/" className="flex items-center gap-2">
         <Image src={'/logo-principal-celeste.png'} width={24} height={24} alt="TCG Shop" className="w-6 h-6 text-accent-primary" />
