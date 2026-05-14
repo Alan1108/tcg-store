@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
-import { BadgeGame, BadgeCondition, BadgeRarity, ButtonWhatsApp, TagDisclaimer, Divider } from '@/components/atoms';
+import { BadgeGame, BadgeCondition, BadgeRarity, BadgePresale, ButtonWhatsApp, TagDisclaimer, Divider } from '@/components/atoms';
 import { SinglesCard } from '@/components/organisms';
 import { getSingleCardById, getSingleCards } from '@/services/products.service';
 import { formatPrice } from '@/lib/format';
@@ -50,6 +50,8 @@ export function SinglesDetailContent({ id }: { id: string }) {
 
   const game = (card.metadata?.game as GameSystem) ?? '';
   const isFoil = Boolean(card.metadata?.is_foil);
+  const isPresale = Boolean(card.metadata?.presale);
+  const launchDate = card.metadata?.launch_date as string | undefined;
   const setName = (card.metadata?.set_name as string) ?? '';
   const setNumber = (card.metadata?.set_number as string) ?? '';
   const language = (card.metadata?.language as string) ?? '';
@@ -79,15 +81,21 @@ export function SinglesDetailContent({ id }: { id: string }) {
         {isFoil && (
           <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-[var(--rarity-holo)] bg-[#A78BFA30]">Foil</span>
         )}
+        {isPresale && (
+          <span className="absolute bottom-3 right-3">
+            <BadgePresale launchDate={launchDate} />
+          </span>
+        )}
       </div>
 
       <div className="px-4 flex flex-col gap-3 py-4">
         {game && <BadgeGame game={game} />}
         <h1 className="font-heading text-2xl font-bold text-text-primary">{card.title}</h1>
         <p className="text-sm text-text-secondary">{setName} · #{setNumber}</p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <BadgeRarity rarity={rarity} />
           <BadgeCondition condition={condition} />
+          {isPresale && <BadgePresale launchDate={launchDate} />}
         </div>
         <div className="flex items-center gap-1">
           <span className="text-[10px] italic text-text-muted">ref.</span>

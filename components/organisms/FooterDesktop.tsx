@@ -1,25 +1,21 @@
 import Link from 'next/link';
-import {Camera, Share2, Music } from 'lucide-react';
 import Image from 'next/image';
 
 const shopLinks = [
   { label: 'Sobres y Cajas', href: '/sealed' },
   { label: 'Singles', href: '/singles' },
-  { label: 'Novedades', href: '/sealed' },
-  { label: 'Ofertas', href: '/sealed' },
 ];
 
 const supportLinks = [
-  { label: 'Centro de Ayuda', href: '#' },
+  { label: 'Centro de Ayuda', href: '/ayuda' },
   { label: 'Estado de Pedido', href: '/account' },
-  { label: 'Envíos y Devoluciones', href: '#' },
-  { label: 'Contacto WhatsApp', href: '#' },
+  { label: 'Contacto WhatsApp', href: '/contacto' },
 ];
 
 const legalLinks = [
-  { label: 'Términos y Condiciones', href: '#' },
-  { label: 'Política de Privacidad', href: '#' },
-  { label: 'Política de Cookies', href: '#' },
+  { label: 'Términos y Condiciones', href: '/legal/terminos-y-condiciones' },
+  { label: 'Política de Privacidad', href: '/legal/politica-de-privacidad' },
+  { label: 'Política de Cookies', href: '/legal/politica-de-cookies' },
 ];
 
 export function FooterDesktop() {

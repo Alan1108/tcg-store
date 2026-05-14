@@ -5,6 +5,7 @@ export { ButtonDanger } from './ButtonDanger';
 export { ButtonWhatsApp } from './ButtonWhatsApp';
 export { ButtonIconOnly } from './ButtonIconOnly';
 export { BadgeGame } from './BadgeGame';
+export { BadgePresale } from './BadgePresale';
 export { BadgeCondition } from './BadgeCondition';
 export { BadgeRarity } from './BadgeRarity';
 export { BadgeStock } from './BadgeStock';

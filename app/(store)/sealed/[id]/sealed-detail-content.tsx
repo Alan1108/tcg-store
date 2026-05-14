@@ -11,7 +11,7 @@ import {
   Plus,
 } from "lucide-react";
 import { notFound } from "next/navigation";
-import { BadgeGame, BadgeStock, Divider } from "@/components/atoms";
+import { BadgeGame, BadgeStock, BadgePresale } from "@/components/atoms";
 import { SealedProductCard } from "@/components/organisms";
 import {
   getSealedProductById,
@@ -105,6 +105,8 @@ export function SealedDetailContent({ id }: { id: string }) {
   const variants = product.variants ?? [];
   const hasVariantChoice = variants.length > 1;
 
+  const isPresale = Boolean(product.metadata?.presale);
+  const launchDate = product.metadata?.launch_date as string | undefined;
   const price = selectedVariant?.calculated_price?.calculated_amount ?? 0;
   const currencyCode =
     selectedVariant?.calculated_price?.currency_code ?? "USD";
@@ -209,9 +211,11 @@ export function SealedDetailContent({ id }: { id: string }) {
               {/* RIGHT — product info */}
               <div className="flex flex-col gap-4">
                 {/* Badges */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {game && <BadgeGame game={game} />}
-                  <BadgeStock status={stockStatus} />
+                  {isPresale
+                    ? <BadgePresale launchDate={launchDate} />
+                    : <BadgeStock status={stockStatus} />}
                 </div>
 
                 {/* Title + subtitle */}

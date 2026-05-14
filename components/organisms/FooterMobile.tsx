@@ -11,12 +11,18 @@ const sections = [
     links: [
       { label: 'Sobres y Cajas', href: '/sealed' },
       { label: 'Singles', href: '/singles' },
-      { label: 'Novedades', href: '/sealed' },
-      { label: 'Ofertas', href: '/sealed' },
     ],
   },
-  { title: 'Soporte', links: [] },
-  { title: 'Legal', links: [] },
+  { title: 'Soporte', links: [
+    { label: 'Centro de Ayuda', href: '/ayuda' },
+    { label: 'Estado de Pedido', href: '/account' },
+    { label: 'Contacto WhatsApp', href: '/contacto' },
+  ]},
+  { title: 'Legal', links: [
+    { label: 'Términos y Condiciones', href: '/legal/terminos-y-condiciones' },
+    { label: 'Política de Privacidad', href: '/legal/politica-de-privacidad' },
+    { label: 'Política de Cookies', href: '/legal/politica-de-cookies' },
+  ]},
 ];
 
 export function FooterMobile() {
